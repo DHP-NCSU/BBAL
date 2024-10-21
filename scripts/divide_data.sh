@@ -1,10 +1,10 @@
 # This script is to divide the dataset into 80% 20%
 echo "If you run this script on linux, change gshuf with shuf "
-base_folder="../caltech256/256_ObjectCategories_test/"
+base_folder="../data/divided/"
 
 mkdir -p "$base_folder"
 
-for dir in "../caltech256/256_ObjectCategories/"*
+for dir in "../data/256_ObjectCategories/"*
 do
 
   subdir=$(basename "$dir")
