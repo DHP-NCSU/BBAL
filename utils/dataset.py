@@ -245,5 +245,5 @@ class ToTensor(object):
         img, label = sample['image'], sample['label']
         img = img.transpose((2, 0, 1))
         sample = {'image': torch.from_numpy(img),
-                  'label': label}
+                  'label': torch.tensor(label, dtype=torch.long)}
         return sample

@@ -149,7 +149,7 @@ def ceal_learning_algorithm(du: DataLoader,
             "Iteration: {}, len(dl): {}, len(du): {}, len(dh) {}\n"
             "acc: {}, sd of accuracies: {}, per-class accuracies: {}".format(
                 iteration, len(dl.sampler.indices),
-                len(du.sampler.indices), len(hcs_indices), acc, sd_acc, class_acc))
+                len(du.sampler.indices), len(hcs_idx), acc, sd_acc, class_acc))
 
 
 if __name__ == "__main__":
