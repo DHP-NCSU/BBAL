@@ -4,7 +4,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils import Caltech256Dataset, Normalize, RandomCrop, SquarifyImage, \
     ToTensor
-from utils import get_uncertain_samples, get_high_confidence_samples, \
+from utils import get_high_confidence_samples, \
     update_threshold
 from model import AlexNet
 from torch.utils.data import DataLoader
@@ -32,30 +32,37 @@ def ceal_learning_algorithm(du: DataLoader,
                             t: int = 1,
                             epochs: int = 10,
                             criteria: str = 'cl',
-                            max_iter: int = 45):
+                            max_iter: int = 45,
+                            alpha: float = 2.0,
+                            lambda_weight: float = 1.0):
     """
-    Algorithm1 : Learning algorithm of CEAL.
-    For simplicity, I used the same notation in the paper.
+    Algorithm1 : Learning algorithm of CEAL with class punishment.
     Parameters
     ----------
     du: DataLoader
         Unlabeled samples
     dl : DataLoader
-        labeled samples
+        Labeled samples
     dtest : DataLoader
-        test data
+        Test data
     k: int, (default = 1000)
-        uncertain samples selection
+        Number of uncertain samples to select
     delta_0: float
-        hight confidence samples selection threshold
+        High confidence samples selection threshold
     dr: float
-        threshold decay
+        Threshold decay
     t: int
-        fine-tuning interval
+        Fine-tuning interval
     epochs: int
+        Number of training epochs
     criteria: str
+        Uncertainty criteria
     max_iter: int
-        maximum iteration number.
+        Maximum iteration number
+    alpha: float
+        Hyperparameter controlling the growth rate of punishment
+    lambda_weight: float
+        Weighting factor balancing uncertainty and punishment
 
     Returns
     -------
@@ -65,15 +72,25 @@ def ceal_learning_algorithm(du: DataLoader,
         len(du.sampler.indices),
         len(dl.sampler.indices)))
 
+    # Number of classes
+    n_classes = 256
+
+    # Initialize n_c_labeled based on initial labeled data
+    n_c_labeled = np.zeros(n_classes, dtype=np.float32)
+    for idx in dl.sampler.indices:
+        label = dl.dataset.labels[idx]
+        n_c_labeled[label] += 1
+
     # Create the model
-    model = AlexNet(n_classes=256, device=device)
+    model = AlexNet(n_classes=n_classes, device=None)
 
     # Initialize the model
-    logger.info('Intialize training the model on `dl` and test on `dtest`')
+    logger.info('Initialize training the model on `dl` and test on `dtest`')
 
     model.train(epochs=epochs, train_loader=dl, valid_loader=None)
 
     # Evaluate model on dtest
+    # acc = model.evaluate(test_loader=dtest)
     acc, sd_acc, class_acc = model.evaluate_per_class(test_loader=dtest)
 
     # print('====> Initial accuracy: {} '.format(acc))
@@ -88,46 +105,85 @@ def ceal_learning_algorithm(du: DataLoader,
 
         pred_prob = model.predict(test_loader=du)
 
-        # get k uncertain samples
-        uncert_samp_idx, _ = get_uncertain_samples(pred_prob=pred_prob, k=k,
-                                                   criteria=criteria)
+        # Save a copy of du.sampler.indices to ensure consistent mapping
+        current_du_indices = du.sampler.indices.copy()
 
-        # get original indices
-        uncert_samp_idx = [du.sampler.indices[idx] for idx in uncert_samp_idx]
+        # Compute predicted classes
+        predicted_classes = np.argmax(pred_prob, axis=1)
 
-        # add the uncertain samples selected from `du` to the labeled samples
-        #  set `dl`
-        dl.sampler.indices.extend(uncert_samp_idx)
+        # Estimate n_c_total
+        n_c_total = pred_prob.sum(axis=0)  # shape: (n_classes,)
+
+        epsilon = 1e-10
+
+        # Compute Punishment_c
+        Punishment_c = (n_c_labeled / (n_c_total + epsilon)) ** alpha
+
+        # Compute uncertainties
+        uncertainties = -np.sum(pred_prob * np.log(pred_prob + epsilon), axis=1)
+
+        # Compute adjusted scores
+        adjusted_scores = uncertainties - lambda_weight * Punishment_c[predicted_classes]
+
+        # Select top k samples with highest adjusted scores
+        k = min(k, len(adjusted_scores))
+        uncert_samp_idx = np.argsort(-adjusted_scores)[:k]
+
+        # Map uncert_samp_idx to original indices
+        selected_uncert_indices = [current_du_indices[idx] for idx in uncert_samp_idx]
+
+        # Update n_c_labeled with true labels of uncertain samples
+        for idx in selected_uncert_indices:
+            label = du.dataset.labels[idx]
+            n_c_labeled[label] += 1
+
+        # Add uncertain samples to dl
+        dl.sampler.indices.extend(selected_uncert_indices)
 
         logger.info(
-            'Update size of `dl`  and `du` by adding uncertain {} samples'
-            ' in `dl`'
+            'Update size of `dl`  and `du` by adding uncertain {} samples in `dl`'
             ' len(dl): {}, len(du) {}'.
-            format(len(uncert_samp_idx), len(dl.sampler.indices),
+            format(len(selected_uncert_indices), len(dl.sampler.indices),
                    len(du.sampler.indices)))
 
-        # get high confidence samples `dh`
+        # Get high confidence samples `dh`
         hcs_idx, hcs_labels = get_high_confidence_samples(pred_prob=pred_prob,
                                                           delta=delta_0)
-        # get the original indices
-        hcs_idx = [du.sampler.indices[idx] for idx in hcs_idx]
 
-        # remove the samples that already selected as uncertain samples.
-        hcs_idx = [x for x in hcs_idx if
-                   x not in list(set(uncert_samp_idx) & set(hcs_idx))]
+        # Map hcs_idx to original indices
+        hcs_indices = [current_du_indices[idx] for idx in hcs_idx]
 
-        # add high confidence samples to the labeled set 'dl'
+        # Remove samples that are already selected as uncertain samples
+        hcs_tuples = [(idx, label) for idx, label in zip(hcs_indices, hcs_labels) if idx not in selected_uncert_indices]
 
-        # (1) update the indices
-        dl.sampler.indices.extend(hcs_idx)
-        # (2) update the original labels with the pseudo labels.
-        for idx in range(len(hcs_idx)):
-            dl.dataset.labels[hcs_idx[idx]] = hcs_labels[idx]
+        if hcs_tuples:
+            hcs_indices, hcs_labels = zip(*hcs_tuples)
+            hcs_indices = list(hcs_indices)
+            hcs_labels = list(hcs_labels)
+        else:
+            hcs_indices = []
+            hcs_labels = []
+
+        # Update n_c_labeled with hcs_labels
+        for label in hcs_labels:
+            n_c_labeled[label] += 1
+
+        # Add high confidence samples to dl
+        dl.sampler.indices.extend(hcs_indices)
+
+        # Update labels in dl.dataset.labels
+        for idx, label in zip(hcs_indices, hcs_labels):
+            dl.dataset.labels[idx] = label
+
         logger.info(
             'Update size of `dl`  and `du` by adding {} hcs samples in `dl`'
             ' len(dl): {}, len(du) {}'.
-            format(len(hcs_idx), len(dl.sampler.indices),
+            format(len(hcs_indices), len(dl.sampler.indices),
                    len(du.sampler.indices)))
+
+        # Remove all selected samples from du.sampler.indices after processing
+        selected_indices_to_remove = selected_uncert_indices + hcs_indices
+        du.sampler.indices = [idx for idx in du.sampler.indices if idx not in selected_indices_to_remove]
 
         if iteration % t == 0:
             logger.info('Iteration: {} fine-tune the model on dh U dl'.
@@ -136,12 +192,6 @@ def ceal_learning_algorithm(du: DataLoader,
 
             # update delta_0
             delta_0 = update_threshold(delta=delta_0, dr=dr, t=iteration)
-
-        # remove the uncertain samples from the original `du`
-        logger.info('remove {} uncertain samples from du'.
-                    format(len(uncert_samp_idx)))
-        for val in uncert_samp_idx:
-            du.sampler.indices.remove(val)
 
         acc, sd_acc, class_acc = model.evaluate_per_class(test_loader=dtest)
 
@@ -196,4 +246,4 @@ if __name__ == "__main__":
     dtest = torch.utils.data.DataLoader(dataset_test, batch_size=batch_size,
                                         num_workers=4)
 
-    ceal_learning_algorithm(du=du, dl=dl, dtest=dtest)
+    ceal_learning_algorithm(du=du, dl=dl, dtest=dtest, epochs=10)

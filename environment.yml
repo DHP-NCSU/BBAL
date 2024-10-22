@@ -1,4 +1,4 @@
-name: myenv
+name: alcv
 channels:
   - anaconda
   - conda-forge

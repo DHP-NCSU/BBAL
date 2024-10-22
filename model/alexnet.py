@@ -39,6 +39,8 @@ class AlexNet(object):
         if device is None:
             self.device = torch.device(
                 "cuda:0" if torch.cuda.is_available() else "cpu")
+        else:
+            self.device = device
         logger.info('The code is running on {} '.format(self.device))
 
     def __freeze_all_layers(self) -> None:
@@ -127,7 +129,7 @@ class AlexNet(object):
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                     epoch, batch_idx * len(data),
                     len(train_loader.sampler.indices),
-                    100. * batch_idx / len(train_loader.sampler.indices),
+                    100. * (batch_idx * len(data)) / len(train_loader.sampler.indices),
                     loss.item()))
         if valid_loader:
             acc = self.evaluate(test_loader=valid_loader)
@@ -220,3 +222,66 @@ class AlexNet(object):
                 predict_results = np.concatenate(
                     (predict_results, outputs.cpu().numpy()))
         return predict_results
+    
+    def evaluate_per_class(self, test_loader: DataLoader) -> (float, float, dict):
+        """
+        Evaluate the model's accuracy for each class, calculate the standard deviation, and overall accuracy.
+
+        Parameters
+        ----------
+        test_loader : DataLoader
+
+        Returns
+        -------
+        overall_accuracy : float
+            Overall accuracy across all classes.
+        sd : float
+            Standard deviation of per-class accuracies.
+        per_class_accuracy : dict
+            Dictionary mapping class indices to their accuracies.
+        """
+        self.model.eval()
+        correct_per_class = np.zeros(self.n_classes)
+        total_per_class = np.zeros(self.n_classes)
+        total_correct = 0
+        total_samples = 0
+
+        with torch.no_grad():
+            for batch_idx, sample_batched in enumerate(test_loader):
+                data, labels = sample_batched['image'], sample_batched['label']
+                data = data.to(self.device).float()
+                labels = labels.to(self.device)
+                outputs = self.model(data)
+                _, predicted = torch.max(outputs.data, 1)
+
+                # Update total correct predictions and samples
+                total_samples += labels.size(0)
+                total_correct += (predicted == labels).sum().item()
+
+                # Update per-class correct predictions and samples
+                for label, prediction in zip(labels, predicted):
+                    total_per_class[label.item()] += 1
+                    if label.item() == prediction.item():
+                        correct_per_class[label.item()] += 1
+
+        per_class_accuracy = {}
+        accuracies = []
+        for i in range(self.n_classes):
+            if total_per_class[i] > 0:
+                acc = correct_per_class[i] / total_per_class[i]
+                per_class_accuracy[i] = acc
+                accuracies.append(acc)
+            else:
+                per_class_accuracy[i] = None  # No samples for this class
+
+        accuracies = np.array(accuracies)
+        sd = np.std(accuracies)
+
+        overall_accuracy = total_correct / total_samples
+
+        # print(f"Overall accuracy: {overall_accuracy * 100:.2f}%")
+        # print(f"Per-class accuracies: {per_class_accuracy}")
+        # print(f"Standard deviation of accuracies: {sd:.4f}")
+
+        return overall_accuracy, sd, per_class_accuracy
+

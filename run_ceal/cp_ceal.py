@@ -71,15 +71,12 @@ def ceal_learning_algorithm(du: DataLoader,
     # Initialize the model
     logger.info('Intialize training the model on `dl` and test on `dtest`')
 
-    model.train(epochs=epochs, train_loader=dl, valid_loader=None)
+    model.train(epochs=1, train_loader=dl, valid_loader=None)
 
     # Evaluate model on dtest
-    acc, sd_acc, class_acc = model.evaluate_per_class(test_loader=dtest)
+    acc = model.evaluate(test_loader=dtest)
 
-    # print('====> Initial accuracy: {} '.format(acc))
-    print(f"====> Initial accuracy: {acc * 100:.2f}%")
-    print(f"====> Initial per-class accuracies: {class_acc}")
-    print(f"====> Initial sd of accuracies: {sd_acc:.4f}")
+    print('====> Initial accuracy: {} '.format(acc))
 
     for iteration in range(max_iter):
 
@@ -87,6 +84,7 @@ def ceal_learning_algorithm(du: DataLoader,
                     '`du` '.format(iteration))
 
         pred_prob = model.predict(test_loader=du)
+        breakpoint()
 
         # get k uncertain samples
         uncert_samp_idx, _ = get_uncertain_samples(pred_prob=pred_prob, k=k,
@@ -143,13 +141,12 @@ def ceal_learning_algorithm(du: DataLoader,
         for val in uncert_samp_idx:
             du.sampler.indices.remove(val)
 
-        acc, sd_acc, class_acc = model.evaluate_per_class(test_loader=dtest)
-
+        acc = model.evaluate(test_loader=dtest)
         print(
-            "Iteration: {}, len(dl): {}, len(du): {}, len(dh) {}\n"
-            "acc: {}, sd of accuracies: {}, per-class accuracies: {}".format(
+            "Iteration: {}, len(dl): {}, len(du): {},"
+            " len(dh) {}, acc: {} ".format(
                 iteration, len(dl.sampler.indices),
-                len(du.sampler.indices), len(hcs_indices), acc, sd_acc, class_acc))
+                len(du.sampler.indices), len(hcs_idx), acc))
 
 
 if __name__ == "__main__":

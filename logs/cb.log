@@ -1,0 +1,98 @@
+INFO:__main__: Using device: cuda
+INFO:__main__: Initial configuration: len(du): 21528, len(dl): 2391 
+INFO:model.alexnet: The code is running on cuda:0 
+INFO:__main__: Initialize training the model on `dl` and test on `dtest`
+Train Epoch: 0 [0/2391 (0%)]	Loss: 6.094612
+====> Epoch: 0 Average loss: 0.2614
+INFO:__main__: Iteration: 0: run prediction on unlabeled data `du` 
+====> Initial accuracy: 38.0139907865552 
+INFO:__main__: Update size of `dl`  and `du` by adding uncertain 1000 samples in `dl` len(dl): 3391, len(du) 21528
+INFO:__main__: Update size of `dl`  and `du` by adding 13 hcs samples in `dl` len(dl): 3404, len(du) 21528
+INFO:__main__: Iteration: 0 fine-tune the model on dh U dl
+Train Epoch: 0 [0/3404 (0%)]	Loss: 1.672680
+====> Epoch: 0 Average loss: 0.1228
+Train Epoch: 1 [0/3404 (0%)]	Loss: 1.099271
+====> Epoch: 1 Average loss: 0.0634
+Train Epoch: 2 [0/3404 (0%)]	Loss: 0.438724
+====> Epoch: 2 Average loss: 0.0387
+Train Epoch: 3 [0/3404 (0%)]	Loss: 0.318902
+====> Epoch: 3 Average loss: 0.0259
+Train Epoch: 4 [0/3404 (0%)]	Loss: 0.254107
+====> Epoch: 4 Average loss: 0.0181
+Train Epoch: 5 [0/3404 (0%)]	Loss: 0.137119
+====> Epoch: 5 Average loss: 0.0141
+Train Epoch: 6 [0/3404 (0%)]	Loss: 0.204201
+====> Epoch: 6 Average loss: 0.0113
+Train Epoch: 7 [0/3404 (0%)]	Loss: 0.132153
+====> Epoch: 7 Average loss: 0.0094
+Train Epoch: 8 [0/3404 (0%)]	Loss: 0.308402
+====> Epoch: 8 Average loss: 0.0078
+Train Epoch: 9 [0/3404 (0%)]	Loss: 0.149638
+====> Epoch: 9 Average loss: 0.0072
+INFO:__main__: Iteration: 1: run prediction on unlabeled data `du` 
+Iteration: 0, len(dl): 3404, len(du): 20515, len(dh) 13, acc: 51.9024057328101 
+INFO:__main__: Update size of `dl`  and `du` by adding uncertain 1000 samples in `dl` len(dl): 4404, len(du) 20515
+INFO:__main__: Update size of `dl`  and `du` by adding 738 hcs samples in `dl` len(dl): 5142, len(du) 20515
+INFO:__main__: Iteration: 1 fine-tune the model on dh U dl
+Train Epoch: 0 [0/5142 (0%)]	Loss: 3.892264
+Train Epoch: 0 [4800/5142 (93%)]	Loss: 2.653851
+====> Epoch: 0 Average loss: 0.1025
+Train Epoch: 1 [0/5142 (0%)]	Loss: 0.919117
+Train Epoch: 1 [4800/5142 (93%)]	Loss: 0.388746
+====> Epoch: 1 Average loss: 0.0657
+Train Epoch: 2 [0/5142 (0%)]	Loss: 1.098131
+Train Epoch: 2 [4800/5142 (93%)]	Loss: 0.808405
+====> Epoch: 2 Average loss: 0.0475
+Train Epoch: 3 [0/5142 (0%)]	Loss: 0.689347
+Train Epoch: 3 [4800/5142 (93%)]	Loss: 1.364164
+====> Epoch: 3 Average loss: 0.0353
+Train Epoch: 4 [0/5142 (0%)]	Loss: 0.387178
+Train Epoch: 4 [4800/5142 (93%)]	Loss: 0.559571
+====> Epoch: 4 Average loss: 0.0289
+Train Epoch: 5 [0/5142 (0%)]	Loss: 0.166328
+Train Epoch: 5 [4800/5142 (93%)]	Loss: 0.379348
+====> Epoch: 5 Average loss: 0.0232
+Train Epoch: 6 [0/5142 (0%)]	Loss: 0.189547
+Train Epoch: 6 [4800/5142 (93%)]	Loss: 0.120275
+====> Epoch: 6 Average loss: 0.0195
+Train Epoch: 7 [0/5142 (0%)]	Loss: 0.238572
+Train Epoch: 7 [4800/5142 (93%)]	Loss: 0.328953
+====> Epoch: 7 Average loss: 0.0170
+Train Epoch: 8 [0/5142 (0%)]	Loss: 0.135580
+Train Epoch: 8 [4800/5142 (93%)]	Loss: 0.168322
+====> Epoch: 8 Average loss: 0.0151
+Train Epoch: 9 [0/5142 (0%)]	Loss: 0.124306
+Train Epoch: 9 [4800/5142 (93%)]	Loss: 0.211078
+====> Epoch: 9 Average loss: 0.0141
+INFO:__main__: Iteration: 2: run prediction on unlabeled data `du` 
+Iteration: 1, len(dl): 5142, len(du): 18777, len(dh) 738, acc: 45.8283569356765 
+INFO:__main__: Update size of `dl`  and `du` by adding uncertain 1000 samples in `dl` len(dl): 6142, len(du) 18777
+INFO:__main__: Update size of `dl`  and `du` by adding 179 hcs samples in `dl` len(dl): 6321, len(du) 18777
+INFO:__main__: Iteration: 2 fine-tune the model on dh U dl
+Train Epoch: 0 [0/6321 (0%)]	Loss: 0.938211
+Train Epoch: 0 [4800/6321 (76%)]	Loss: 0.392078
+====> Epoch: 0 Average loss: 0.0540
+Train Epoch: 1 [0/6321 (0%)]	Loss: 0.338680
+Train Epoch: 1 [4800/6321 (76%)]	Loss: 0.904417
+====> Epoch: 1 Average loss: 0.0385
+Train Epoch: 2 [0/6321 (0%)]	Loss: 0.219523
+Train Epoch: 2 [4800/6321 (76%)]	Loss: 0.211059
+====> Epoch: 2 Average loss: 0.0303
+Train Epoch: 3 [0/6321 (0%)]	Loss: 0.173221
+Train Epoch: 3 [4800/6321 (76%)]	Loss: 0.136229
+Traceback (most recent call last):
+  File "run_ceal/cb_ceal.py", line 244, in <module>
+    ceal_learning_algorithm(du=du, dl=dl, dtest=dtest)
+  File "run_ceal/cb_ceal.py", line 187, in ceal_learning_algorithm
+    model.train(epochs=epochs, train_loader=dl)
+  File "/root/CEAL/model/alexnet.py", line 170, in train
+    epoch=epoch
+  File "/root/CEAL/model/alexnet.py", line 116, in __train_one_epoch
+    loss = criterion(pred_prob, label)
+  File "/opt/conda/envs/alcv/lib/python3.7/site-packages/torch/nn/modules/module.py", line 1194, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/opt/conda/envs/alcv/lib/python3.7/site-packages/torch/nn/modules/loss.py", line 1176, in forward
+    label_smoothing=self.label_smoothing)
+  File "/opt/conda/envs/alcv/lib/python3.7/site-packages/torch/nn/functional.py", line 3026, in cross_entropy
+    return torch._C._nn.cross_entropy_loss(input, target, weight, _Reduction.get_enum(reduction), ignore_index, label_smoothing)
+RuntimeError: "nll_loss_forward_reduce_cuda_kernel_2d_index" not implemented for 'Int'
