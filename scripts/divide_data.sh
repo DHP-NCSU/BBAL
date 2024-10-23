@@ -1,5 +1,7 @@
 # This script is to divide the dataset into 80% 20%
-echo "If you run this script on linux, change gshuf with shuf "
+mkdir ../data
+mv /root/.cache/kagglehub/datasets/jessicali9530/caltech256/versions/2/256_ObjectCategories ../data
+
 base_folder="../data/divided/"
 
 mkdir -p "$base_folder"

@@ -14,6 +14,7 @@ from torch.utils.data.sampler import SubsetRandomSampler
 import numpy as np
 import torch
 import logging
+import argparse
 
 logging.basicConfig(format="%(levelname)s:%(name)s: %(message)s",
                     level=logging.INFO)
@@ -34,9 +35,10 @@ def ceal_learning_algorithm(du: DataLoader,
                             criteria: str = 'cl',
                             max_iter: int = 45,
                             alpha: float = 2.0,
-                            lambda_weight: float = 1.0):
+                            lambda_weight: float = 1.0,
+                            gamma_weight: float = 1.0):
     """
-    Algorithm1 : Learning algorithm of CEAL with class punishment.
+    Algorithm1 : Learning algorithm of CEAL with class punishment and incorrectness rate.
     Parameters
     ----------
     du: DataLoader
@@ -63,6 +65,8 @@ def ceal_learning_algorithm(du: DataLoader,
         Hyperparameter controlling the growth rate of punishment
     lambda_weight: float
         Weighting factor balancing uncertainty and punishment
+    gamma_weight: float
+        Weighting factor for incorrectness rate
 
     Returns
     -------
@@ -91,19 +95,16 @@ def ceal_learning_algorithm(du: DataLoader,
 
     # Evaluate model on dtest
     # acc = model.evaluate(test_loader=dtest)
-    acc, sd_acc, class_acc = model.evaluate_per_class(test_loader=dtest)
+    acc, sd_acc, per_class_acc = model.evaluate_per_class(test_loader=dtest)
 
     # print('====> Initial accuracy: {} '.format(acc))
     print(f"====> Initial accuracy: {acc * 100:.2f}%")
-    print(f"====> Initial per-class accuracies: {class_acc}")
+    print(f"====> Initial per-class accuracies: {per_class_acc}")
     print(f"====> Initial sd of accuracies: {sd_acc:.4f}")
-    
-    # Initialize lists to collect uncertainties, punishments, and adjusted scores
-    all_uncertainties = []
-    all_punishments = []
-    all_adjusted_scores = []
 
     for iteration in range(max_iter):
+        # Compute Incorrectness_c
+        Incorrectness_c = np.array([1.0 - per_class_acc[i] for i in range(n_classes)])
 
         logger.info('Iteration: {}: run prediction on unlabeled data '
                     '`du` '.format(iteration))
@@ -127,13 +128,16 @@ def ceal_learning_algorithm(du: DataLoader,
         # Compute uncertainties
         uncertainties = -np.sum(pred_prob * np.log(pred_prob + epsilon), axis=1)
 
+        # normalize the criteria
+        def norm(arr):
+            arr_min, arr_max = np.min(arr), np.max(arr)
+            if arr_max - arr_min < epsilon:
+                return np.zeros_like(arr)
+            return (arr - arr_min) / (arr_max - arr_min)
+
+        # breakpoint()
         # Compute adjusted scores
-        adjusted_scores = uncertainties - lambda_weight * Punishment_c[predicted_classes]
-        
-        # Save uncertainties, punishment values and adjusted scores
-        all_uncertainties.extend(uncertainties.tolist())
-        all_punishments.extend(Punishment_c[predicted_classes].tolist())
-        all_adjusted_scores.extend(adjusted_scores.tolist())
+        adjusted_scores = norm(uncertainties) - lambda_weight * norm(Punishment_c[predicted_classes]) + gamma_weight * norm(Incorrectness_c[predicted_classes])
 
         # Select top k samples with highest adjusted scores
         k = min(k, len(adjusted_scores))
@@ -203,33 +207,26 @@ def ceal_learning_algorithm(du: DataLoader,
             # update delta_0
             delta_0 = update_threshold(delta=delta_0, dr=dr, t=iteration)
 
-        acc, sd_acc, class_acc = model.evaluate_per_class(test_loader=dtest)
+        acc, sd_acc, per_class_acc = model.evaluate_per_class(test_loader=dtest)
 
         print(
             "Iteration: {}, len(dl): {}, len(du): {}, len(dh) {}\n"
             "acc: {}, sd of accuracies: {}, per-class accuracies: {}".format(
                 iteration, len(dl.sampler.indices),
-                len(du.sampler.indices), len(hcs_indices), acc, sd_acc, class_acc))
-    
-    # Compute statistics for uncertainties
-    mean_uncertainty = np.mean(all_uncertainties)
-    median_uncertainty = np.median(all_uncertainties)
-    std_uncertainty = np.std(all_uncertainties)
-
-    # Compute statistics for punishments
-    mean_punishment = np.mean(all_punishments)
-    median_punishment = np.median(all_punishments)
-    std_punishment = np.std(all_punishments)
-
-    print(f"Uncertainties - Mean: {mean_uncertainty}, Median: {median_uncertainty}, Std: {std_uncertainty}")
-    print(f"Punishments - Mean: {mean_punishment}, Median: {median_punishment}, Std: {std_punishment}")
-    
-    # Compare scales
-    scale_ratio = mean_uncertainty / (mean_punishment + 1e-10)  # Add small epsilon to avoid division by zero
-    print(f"Scale ratio (Uncertainty / Punishment): {scale_ratio}")
+                len(du.sampler.indices), len(hcs_indices), acc, sd_acc, per_class_acc))
 
 
 if __name__ == "__main__":
+
+    # import argparse
+
+    parser = argparse.ArgumentParser(description='Active Learning with CEAL and Class Punishment and Incorrectness Rate')
+
+    parser.add_argument('--lambda_weight', type=float, default=1.0, help='Weight for class punishment')
+    parser.add_argument('--gamma_weight', type=float, default=1.0, help='Weight for incorrectness rate')
+    # parser.add_argument('--criteria', type=str, default='cl', help='Criteria for selection')
+
+    args = parser.parse_args()
 
     dataset_train = Caltech256Dataset(
         root_dir="../data/256_ObjectCategories",
@@ -273,4 +270,5 @@ if __name__ == "__main__":
     dtest = torch.utils.data.DataLoader(dataset_test, batch_size=batch_size,
                                         num_workers=4)
 
-    ceal_learning_algorithm(du=du, dl=dl, dtest=dtest, epochs=10, max_iter=3)
+    ceal_learning_algorithm(du=du, dl=dl, dtest=dtest, epochs=10, 
+                            lambda_weight=args.lambda_weight, gamma_weight=args.gamma_weight)
