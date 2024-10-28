@@ -8,3 +8,5 @@ conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cud
 sudo apt install nvidia-cuda-toolkit
 
 git remote set-url origin https://TheFatBlue:<your-token>@github.com/DHP-NCSU/CEAL.git
+
+for file in gs*; do mv "$file" "${file}.log"; done
