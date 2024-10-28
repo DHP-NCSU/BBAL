@@ -264,11 +264,11 @@ if __name__ == "__main__":
     valid_sampler = SubsetRandomSampler(val_indices)
 
     du = torch.utils.data.DataLoader(dataset_train, batch_size=batch_size,
-                                     sampler=train_sampler, num_workers=4)
+                                     sampler=train_sampler, num_workers=4, pin_memory=True)
     dl = torch.utils.data.DataLoader(dataset_train, batch_size=batch_size,
-                                     sampler=valid_sampler, num_workers=4)
+                                     sampler=valid_sampler, num_workers=4, pin_memory=True)
     dtest = torch.utils.data.DataLoader(dataset_test, batch_size=batch_size,
-                                        num_workers=4)
+                                        num_workers=4, pin_memory=True)
 
     ceal_learning_algorithm(du=du, dl=dl, dtest=dtest, epochs=10, 
                             lambda_weight=args.lambda_weight, gamma_weight=args.gamma_weight)
