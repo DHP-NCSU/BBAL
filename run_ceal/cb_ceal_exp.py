@@ -110,7 +110,7 @@ def ceal_learning_algorithm(du: DataLoader,
                     '`du` '.format(iteration))
 
         pred_prob = model.predict(test_loader=du)
-‘
+
         # Save a copy of du.sampler.indices to ensure consistent mapping
         current_du_indices = du.sampler.indices.copy()
 
