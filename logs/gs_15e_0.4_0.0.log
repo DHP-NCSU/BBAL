@@ -1,0 +1,22 @@
+INFO:__main__: Using device: cuda
+INFO:__main__: Initial configuration: len(du): 21527, len(dl): 2391 
+INFO:model.alexnet: The code is running on cuda:0 
+INFO:__main__: Initialize training the model on `dl` and test on `dtest`
+Train Epoch: 0 [0/2391 (0%)]	Loss: 5.451625
+====> Epoch: 0 Average loss: 0.2606
+Train Epoch: 1 [0/2391 (0%)]	Loss: 1.512761
+====> Epoch: 1 Average loss: 0.1006
+Train Epoch: 2 [0/2391 (0%)]	Loss: 1.230984
+====> Epoch: 2 Average loss: 0.0518
+Train Epoch: 3 [0/2391 (0%)]	Loss: 0.531305
+====> Epoch: 3 Average loss: 0.0316
+Train Epoch: 4 [0/2391 (0%)]	Loss: 0.291453
+====> Epoch: 4 Average loss: 0.0211
+Train Epoch: 5 [0/2391 (0%)]	Loss: 0.202771
+====> Epoch: 5 Average loss: 0.0146
+Train Epoch: 6 [0/2391 (0%)]	Loss: 0.191316
+====> Epoch: 6 Average loss: 0.0111
+Train Epoch: 7 [0/2391 (0%)]	Loss: 0.127233
+====> Epoch: 7 Average loss: 0.0098
+Train Epoch: 8 [0/2391 (0%)]	Loss: 0.235847
+====> Epoch: 8 Average loss: 0.0082
