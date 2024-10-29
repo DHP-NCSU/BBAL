@@ -89,7 +89,7 @@ def ceal_learning_algorithm(du: DataLoader,
         pred_prob = model.predict(test_loader=du)
 
         # get k uncertain samples
-        uncert_samp_idx, _ = get_uncertain_samples(pred_prob=pred_prob, k=k,
+        uncert_samp_idx, _ = ·(pred_prob=pred_prob, k=k,
                                                    criteria=criteria)
 
         # get original indices

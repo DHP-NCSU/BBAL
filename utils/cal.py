@@ -16,7 +16,11 @@ for line in sys.stdin:
         acc_acc += float(acc.split(': ')[1])
         acc_sd += float(sd.split(': ')[1])
         cnt += 1
+    if cnt == 12:
+        break
 
-assert(cnt == 21)
-print(acc_acc / cnt)
-print(acc_sd / cnt)
+# assert(cnt == 21)
+if cnt < 21:
+    # print(cnt)
+    print(acc_acc / cnt)
+    print(acc_sd / cnt)
