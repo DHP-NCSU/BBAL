@@ -136,24 +136,12 @@ def ceal_learning_algorithm(du: DataLoader,
             return (arr - arr_min) / (arr_max - arr_min)
 
         # breakpoint()
-        k = min(k, len(uncertainties))
-        baselien_samp_idx = np.argsort(-uncertainties)[:k]
-        while True:
-            lambda_weight, gamma_weight = input("input lambda and gamma:\n").split(' ')
-            lambda_weight, gamma_weight = float(lambda_weight.strip()), float(gamma_weight.strip())
-            adjusted_scores = norm(uncertainties) - lambda_weight * norm(Punishment_c[predicted_classes]) + gamma_weight * norm(Incorrectness_c[predicted_classes])
-            uncert_samp_idx = np.argsort(-adjusted_scores)[:k]
-            overlap = len(set(baselien_samp_idx) & set(uncert_samp_idx))
-            decision = input(f"The overlap now is {overlap}, do you want to use this set? (y/n)\n")
-            if decision.strip() == 'y':
-                break
-        
         # Compute adjusted scores
-        # adjusted_scores = norm(uncertainties) - lambda_weight * norm(Punishment_c[predicted_classes]) + gamma_weight * norm(Incorrectness_c[predicted_classes])
+        adjusted_scores = norm(uncertainties) - lambda_weight * norm(Punishment_c[predicted_classes]) + gamma_weight * norm(Incorrectness_c[predicted_classes])
 
         # Select top k samples with highest adjusted scores
-        # k = min(k, len(adjusted_scores))
-        # uncert_samp_idx = np.argsort(-adjusted_scores)[:k]
+        k = min(k, len(adjusted_scores))
+        uncert_samp_idx = np.argsort(-adjusted_scores)[:k]
 
         # Map uncert_samp_idx to original indices
         selected_uncert_indices = [current_du_indices[idx] for idx in uncert_samp_idx]

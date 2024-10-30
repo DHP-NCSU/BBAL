@@ -128,6 +128,9 @@ def ceal_learning_algorithm(du: DataLoader,
         # Compute uncertainties
         uncertainties = -np.sum(pred_prob * np.log(pred_prob + epsilon), axis=1)
 
+        #calculate average uncertainty for each class
+        class_uncertainties = np.zeros(n_classes,dtype=np.float32)
+        class_counts = np.zeros(n_classes,dtype = dtype=np.float32)
         # normalize the criteria
         def norm(arr):
             arr_min, arr_max = np.min(arr), np.max(arr)
@@ -159,10 +162,18 @@ def ceal_learning_algorithm(du: DataLoader,
         selected_uncert_indices = [current_du_indices[idx] for idx in uncert_samp_idx]
 
         # Update n_c_labeled with true labels of uncertain samples
-        for idx in selected_uncert_indices:
+    '''for idx in selected_uncert_indices:
             label = du.dataset.labels[idx]
-            n_c_labeled[label] += 1
+            n_c_labeled[label] += 1'''
+        for idx, uncertainty in zip(current_du_indices,uncertainties):
+            label = du.dataset.labels[idx]
+            class_uncertainties[label] += uncertainty
+            class_counts[label] += 1
+        
+        #Avoid division by zero
+        class_uncertainties = np.divided(class_uncertainties,class_counts, where=class_counts > 0)
 
+        
         # Add uncertain samples to dl
         dl.sampler.indices.extend(selected_uncert_indices)
 
