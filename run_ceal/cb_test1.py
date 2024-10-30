@@ -130,7 +130,7 @@ def ceal_learning_algorithm(du: DataLoader,
 
         #calculate average uncertainty for each class
         class_uncertainties = np.zeros(n_classes,dtype=np.float32)
-        class_counts = np.zeros(n_classes,dtype = dtype=np.float32)
+        class_counts = np.zeros(n_classes, dtype=np.float32)
         # normalize the criteria
         def norm(arr):
             arr_min, arr_max = np.min(arr), np.max(arr)
@@ -162,7 +162,7 @@ def ceal_learning_algorithm(du: DataLoader,
         selected_uncert_indices = [current_du_indices[idx] for idx in uncert_samp_idx]
 
         # Update n_c_labeled with true labels of uncertain samples
-    '''for idx in selected_uncert_indices:
+        '''for idx in selected_uncert_indices:
             label = du.dataset.labels[idx]
             n_c_labeled[label] += 1'''
         for idx, uncertainty in zip(current_du_indices,uncertainties):
@@ -171,17 +171,28 @@ def ceal_learning_algorithm(du: DataLoader,
             class_counts[label] += 1
         
         #Avoid division by zero
-        class_uncertainties = np.divided(class_uncertainties,class_counts, where=class_counts > 0)
-
-        
+        class_uncertainties = np.divide(class_uncertainties,class_counts, where=class_counts > 0)
+        #select the most uncertain 5 classes
+        most_uncertain_classes = np.argsort(class_uncertainties)[:5]
+        # Filter samples belonging to the most uncertain classes
+        uncertain_samples = [idx for idx in current_du_indices if du.dataset.labels[idx] in most_uncertain_classes]
+        uncertain_samples = uncertain_samples[:k]  # Limit to k samples
+        # Update n_c_labeled with true labels of uncertain samples
+        for idx in uncertain_samples:
+            label = du.dataset.labels[idx]
+            n_c_labeled[label] += 1
         # Add uncertain samples to dl
-        dl.sampler.indices.extend(selected_uncert_indices)
+        #dl.sampler.indices.extend(selected_uncert_indices)
+        dl.sampler.indices.extend(uncertain_samples)
 
         logger.info(
             'Update size of `dl`  and `du` by adding uncertain {} samples in `dl`'
             ' len(dl): {}, len(du) {}'.
-            format(len(selected_uncert_indices), len(dl.sampler.indices),
-                   len(du.sampler.indices)))
+            #format(len(selected_uncert_indices), len(dl.sampler.indices),
+                   #len(du.sampler.indices)))
+            format(len(uncertain_samples), len(dl.sampler.indices),
+                   len(du.sampler.indices))
+        )
 
         # Get high confidence samples `dh`
         hcs_idx, hcs_labels = get_high_confidence_samples(pred_prob=pred_prob,
@@ -191,7 +202,8 @@ def ceal_learning_algorithm(du: DataLoader,
         hcs_indices = [current_du_indices[idx] for idx in hcs_idx]
 
         # Remove samples that are already selected as uncertain samples
-        hcs_tuples = [(idx, label) for idx, label in zip(hcs_indices, hcs_labels) if idx not in selected_uncert_indices]
+        #hcs_tuples = [(idx, label) for idx, label in zip(hcs_indices, hcs_labels) if idx not in selected_uncert_indices]
+        hcs_tuples = [(idx, label) for idx, label in zip(hcs_indices, hcs_labels) if idx not in uncertain_samples]
 
         if hcs_tuples:
             hcs_indices, hcs_labels = zip(*hcs_tuples)
