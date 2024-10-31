@@ -41,4 +41,5 @@ improvement = {i: round(difference[i] / baseline_acc[i], DICIMAL) for i in range
 impv_keys = sorted(improvement, key=improvement.get, reverse=True)[:COMP_NUM]
 impv = {key: improvement[key] for key in impv_keys}
 print(f"{COMP_NUM} classes with largest impv:     {impv}")
+print(sum(difference.values()))
 
