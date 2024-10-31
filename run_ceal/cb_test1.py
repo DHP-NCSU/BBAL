@@ -165,7 +165,7 @@ def ceal_learning_algorithm(du: DataLoader,
         '''for idx in selected_uncert_indices:
             label = du.dataset.labels[idx]
             n_c_labeled[label] += 1'''
-        for idx, uncertainty in zip(current_du_indices,uncertainties):
+        for idx, uncertainty in zip(selected_uncert_indices,uncertainties):
             label = du.dataset.labels[idx]
             class_uncertainties[label] += uncertainty
             class_counts[label] += 1
@@ -173,9 +173,9 @@ def ceal_learning_algorithm(du: DataLoader,
         #Avoid division by zero
         class_uncertainties = np.divide(class_uncertainties,class_counts, where=class_counts > 0)
         #select the most uncertain 5 classes
-        most_uncertain_classes = np.argsort(class_uncertainties)[:5]
+        most_uncertain_classes = np.argsort(class_uncertainties)[:125]
         # Filter samples belonging to the most uncertain classes
-        uncertain_samples = [idx for idx in current_du_indices if du.dataset.labels[idx] in most_uncertain_classes]
+        uncertain_samples = [idx for idx in current_du_indices if du.dataset.labels[idx] in most_uncertain_classes and idx not in dl.sampler.indices]
         uncertain_samples = uncertain_samples[:k]  # Limit to k samples
         # Update n_c_labeled with true labels of uncertain samples
         for idx in uncertain_samples:
@@ -231,7 +231,8 @@ def ceal_learning_algorithm(du: DataLoader,
                    len(du.sampler.indices)))
 
         # Remove all selected samples from du.sampler.indices after processing
-        selected_indices_to_remove = selected_uncert_indices + hcs_indices
+        #selected_indices_to_remove = selected_uncert_indices + hcs_indices
+        selected_indices_to_remove = uncertain_samples + hcs_indices
         du.sampler.indices = [idx for idx in du.sampler.indices if idx not in selected_indices_to_remove]
 
         if iteration % t == 0:
