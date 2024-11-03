@@ -33,22 +33,25 @@ cmap = sns.color_palette("YlGnBu", as_cmap=True)
 
 
 heatmap = sns.heatmap(df, annot=False, cmap=cmap, cbar_kws={'label': 'Accuracy'}, 
-                       fmt="", linewidths=0.5, linecolor='gray', 
+                       fmt=".4f", linewidths=0.5, linecolor='gray', 
                        vmin=df.min().min(), vmax=df.max().max(), mask=df.isnull())
 
 
 highlight_positions = {(3.0, 1.0), (0.5, 3.0), (1.0, 5.0)}
-
+white_positions = {(0.1,0.1),(1.0,0.0),(3.0,0.0),(3.0,1.0),(1.0,5.0),(0.0,0.0),(0.05,0.1)}
 
 for lam in lambda_values:
     for gam in gamma_values:
-       if (lam, gam) not in highlight_positions and not pd.isna(df.at[lam, gam]):  # process only the normal area
-            x_idx = gamma_values.index(gam) + 0.5  # +0.5 centerize
-            y_idx = lambda_values.index(lam) + 0.5  
-            
+        x_idx = gamma_values.index(gam) + 0.5  # +0.5 centerize
+        y_idx = lambda_values.index(lam) + 0.5 
+        if(lam, gam) not in highlight_positions and not pd.isna(df.at[lam, gam]) and (lam, gam) not in white_positions:  # process only the normal area
             # display the value
-            heatmap.text(x=x_idx, y=y_idx, s=f"{df.at[lam, gam]:.4f}", 
-                          color='grey', fontsize=12, ha='center', va='center')
+                heatmap.text(x=x_idx, y=y_idx, s=f"{df.at[lam, gam]:.4f}", 
+                          color='black', fontsize=10, ha='center', va='center')
+        elif (lam, gam) not in highlight_positions:
+            heatmap.text(x=x_idx, y=y_idx, s=f"{df.at[lam, gam]:.4f}",
+                          color='white', fontsize=10, ha='center', va='center')
+        
 
 # highlight area 
 for (lam, gam) in highlight_positions:
@@ -59,7 +62,7 @@ for (lam, gam) in highlight_positions:
     heatmap.add_patch(plt.Rectangle((x_idx-0.5, y_idx-0.5), 1, 1, fill=True,alpha=0.5))
 
     heatmap.text(x=x_idx, y=y_idx, s=f"{df.at[lam, gam]:.4f}", 
-                  color='orange', fontsize=14, weight='bold', ha='center', va='center')
+                  color='#990000', fontsize=10, weight='bold', ha='center', va='center')
 
 #set labels
 plt.xlabel(r'$\gamma$', fontsize=14)
