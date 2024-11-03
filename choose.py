@@ -1,7 +1,7 @@
 import re
 
 # 设置日志文件路径
-log_file_path = "/root/CEAL/comp.log"
+log_file_path = "comp5.log"
 
 # 用于记录最大平均变化信息
 max_avg_diff = -float('inf')
