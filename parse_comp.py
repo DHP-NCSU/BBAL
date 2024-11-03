@@ -2,7 +2,7 @@ import sys
 import re
 import ast
 
-with open("comp.log", 'r') as f:
+with open("comp5.log", 'r') as f:
     lines = f.readlines()
     
 la, ga = 0.0, 0.0
@@ -14,5 +14,5 @@ for line in lines:
         continue
     dict_str = re.search(r'\{.*\}', line).group()
     pca = ast.literal_eval(dict_str)
-    print(f"{la} & {ga} & {round(pca[29]*100, 2)}\\% & {round(pca[58]*100, 2)}\\% & {round(pca[124]*100, 2)}\\% & {round(pca[41]*100, 2)}\\% & {round(pca[198]*100, 2)}\\% \\\\")
+    print(f"{la} & {ga} & {round(pca[29]*100, 2)}\\% & {round(pca[172]*100, 2)}\\% & {round(pca[58]*100, 2)}\\% & {round(pca[41]*100, 2)}\\% & {round(pca[124]*100, 2)}\\% \\\\")
     
