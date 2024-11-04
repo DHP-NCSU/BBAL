@@ -9,7 +9,7 @@ gamma_values = [0, 0.1, 0.2, 1, 3, 5]
 
 #load data
 data = {
-    (0, 0): 0.5785, (0.05, 0.1): 0.5773, (0.05, 0.2): 0.5755,
+    (0, 0): 0.5778, (0.05, 0.1): 0.5773, (0.05, 0.2): 0.5755,
     (0.1, 0.1): 0.5841, (0.1, 0.2): 0.5733, (0.2, 0.1): 0.5764,
     (0.2, 0.2): 0.5697, (0.5, 0.1): 0.5756, (0.5, 0.2): 0.5709,
     (0.5, 3): 0.5761, (0.5, 5): 0.5757, (1, 0): 0.577, 
@@ -68,7 +68,7 @@ for (lam, gam) in highlight_positions:
 plt.xlabel(r'$\gamma$', fontsize=14)
 plt.ylabel(r'$\lambda$', fontsize=14)
 plt.title("Model Accuracy for Different λ and γ Combinations", fontsize=18, weight='bold', color="darkblue")
-
+plt.savefig("pic/heatmap_baseline5.png", format='png', dpi=300)
 # show
 plt.show()
 
