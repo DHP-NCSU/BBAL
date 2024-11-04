@@ -4,7 +4,8 @@ import ast
 
 COMP_NUM = 5 
 DICIMAL = 4
-with open("./logs/gs_0.0_0.0.log", 'r') as f:
+# with open("./logs/gs_0.0_0.0.log", 'r') as f:
+with open("./logs/baseline5.log", 'r') as f:
     lines = f.readlines()
     
 baseline_acc = {i: 0.0 for i in range(256)}
