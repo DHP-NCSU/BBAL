@@ -1,5 +1,0 @@
-[
-  "tests/test_dataset.py::test_data_squarify",
-  "tests/test_dataset.py::test_data_random_crop",
-  "tests/test_dataset.py::test_data_to_tensor"
-]

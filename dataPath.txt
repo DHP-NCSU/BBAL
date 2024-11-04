@@ -1,1 +1,0 @@
-~/.cache/kagglehub/datasets/jessicali9530/caltech256/versions/2
