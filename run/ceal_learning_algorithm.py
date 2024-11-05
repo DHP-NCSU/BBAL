@@ -1,7 +1,3 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from utils import Caltech256Dataset, Normalize, RandomCrop, SquarifyImage, \
     ToTensor
 from utils import get_uncertain_samples, get_high_confidence_samples, \
@@ -19,9 +15,6 @@ logging.basicConfig(format="%(levelname)s:%(name)s: %(message)s",
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Set device to GPU if available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-logger.info(f"Using device: {device}")
 
 def ceal_learning_algorithm(du: DataLoader,
                             dl: DataLoader,
@@ -66,12 +59,12 @@ def ceal_learning_algorithm(du: DataLoader,
         len(dl.sampler.indices)))
 
     # Create the model
-    model = AlexNet(n_classes=256, device=device)
+    model = AlexNet(n_classes=256, device=None)
 
     # Initialize the model
     logger.info('Intialize training the model on `dl` and test on `dtest`')
 
-    model.train(epochs=1, train_loader=dl, valid_loader=None)
+    model.train(epochs=epochs, train_loader=dl, valid_loader=None)
 
     # Evaluate model on dtest
     acc = model.evaluate(test_loader=dtest)
@@ -84,7 +77,6 @@ def ceal_learning_algorithm(du: DataLoader,
                     '`du` '.format(iteration))
 
         pred_prob = model.predict(test_loader=du)
-        breakpoint()
 
         # get k uncertain samples
         uncert_samp_idx, _ = get_uncertain_samples(pred_prob=pred_prob, k=k,
@@ -152,7 +144,7 @@ def ceal_learning_algorithm(du: DataLoader,
 if __name__ == "__main__":
 
     dataset_train = Caltech256Dataset(
-        root_dir="../data/256_ObjectCategories",
+        root_dir="../caltech256/256_ObjectCategories_train",
         transform=transforms.Compose(
             [SquarifyImage(),
              RandomCrop(224),
@@ -160,7 +152,7 @@ if __name__ == "__main__":
              ToTensor()]))
 
     dataset_test = Caltech256Dataset(
-        root_dir="../data/divided",
+        root_dir="../caltech256/256_ObjectCategories_test",
         transform=transforms.Compose(
             [SquarifyImage(),
              RandomCrop(224),

@@ -14,7 +14,7 @@ Pytorch implementation of BalanceBoost Active Learning.
 1. Install conda environment `conda env create -f environment.yml`
 2. Download [Caltech256](https://www.kaggle.com/jessicali9530/caltech256) using `python utils/download.py`.
 3. Run scripts `divide_data.sh` to divide data into test and train
-4. main_program `run_ceal/cb_ceal_xe.py`
+4. main_program `run/bbal.py`
 
 # References:
 Some code is modified from this [repo](https://github.com/dhaalves/CEAL_keras/blob/master/CEAL_keras.py) 
