@@ -1,0 +1,19 @@
+name: alcv
+channels:
+  - anaconda
+  - conda-forge
+  - pytorch
+  - defaults
+dependencies:
+  - scikit-learn
+  - pytorch=1.13.1
+  - torchvision=0.14.1
+  - pillow
+  - pip:
+    - flake8==3.7.9
+    - pycodestyle==2.5.0
+    - pyflakes==2.1.1
+    - scikit-image==0.14.1
+    - opencv-python
+    - kagglehub
+    # - scikit-learn==0.20.1

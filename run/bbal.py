@@ -20,8 +20,12 @@ logging.basicConfig(format="%(levelname)s:%(name)s: %(message)s",
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Set device to GPU if available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# Set device to GPU if available (CUDA or MPS)
+device = (
+    torch.device("cuda") if torch.cuda.is_available()
+    else torch.device("mps") if torch.backends.mps.is_available()
+    else torch.device("cpu")
+)
 logger.info(f"Using device: {device}")
 
 def ceal_learning_algorithm(du: DataLoader,
@@ -86,7 +90,7 @@ def ceal_learning_algorithm(du: DataLoader,
         n_c_labeled[label] += 1
 
     # Create the model
-    model = AlexNet(n_classes=n_classes, device=None)
+    model = AlexNet(n_classes=n_classes, device=device)
 
     # Initialize the model
     logger.info('Initialize training the model on `dl` and test on `dtest`')
@@ -220,7 +224,7 @@ if __name__ == "__main__":
 
     # import argparse
 
-    parser = argparse.ArgumentParser(description='Active Learning with CEAL and Class Punishment and Incorrectness Rate')
+    parser = argparse.ArgumentParser(description='Active Learning with BBAL and Class Punishment and Incorrectness Rate')
 
     parser.add_argument('--lambda_weight', type=float, default=1.0, help='Weight for class punishment')
     parser.add_argument('--gamma_weight', type=float, default=1.0, help='Weight for incorrectness rate')
@@ -230,7 +234,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     dataset_train = Caltech256Dataset(
-        root_dir="../data/256_ObjectCategories",
+        root_dir="data/caltech256/train",
         transform=transforms.Compose(
             [SquarifyImage(),
              RandomCrop(224),
@@ -238,7 +242,7 @@ if __name__ == "__main__":
              ToTensor()]))
 
     dataset_test = Caltech256Dataset(
-        root_dir="../data/divided",
+        root_dir="data/caltech256/test",
         transform=transforms.Compose(
             [SquarifyImage(),
              RandomCrop(224),

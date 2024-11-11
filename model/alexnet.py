@@ -41,7 +41,7 @@ class AlexNet(object):
                 "cuda:0" if torch.cuda.is_available() else "cpu")
         else:
             self.device = device
-        logger.info('The code is running on {} '.format(self.device))
+        # logger.info('The code is running on {} '.format(self.device))
 
     def __freeze_all_layers(self) -> None:
         """
@@ -102,8 +102,8 @@ class AlexNet(object):
             data, label = sample_batched['image'], sample_batched['label']
 
             # convert data and label to be compatible with the device
-            data = data.to(self.device)
-            data = data.float()
+            data = data.to(self.device, dtype=torch.float32)
+            # data = data.float()
             label = label.to(self.device)
 
             # zero the parameter gradients

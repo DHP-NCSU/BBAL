@@ -2,6 +2,6 @@
 .idea/
 codestyles/
 _mac/
-caltech256/
+data/
 __pycache__/
 .DS_Store
