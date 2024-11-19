@@ -210,7 +210,7 @@ class AlexNet(object):
         """
         self.model.eval()
         self.model.to(self.device)
-        predict_results = np.empty(shape=(0, 256))
+        predict_results = np.empty(shape=(0, self.n_classes))
         with torch.no_grad():
             for batch_idx, sample_batched in enumerate(test_loader):
                 data, _ = sample_batched['image'], \

@@ -4,8 +4,8 @@ import io
 from contextlib import redirect_stdout
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils import Caltech256Dataset, Normalize, RandomCrop, SquarifyImage, \
-    ToTensor
+from utils import Normalize, RandomCrop, SquarifyImage, ToTensor
+from utils import Caltech256Dataset, Food101Dataset, CIFAR100Dataset, MITIndoor67Dataset
 from utils import get_high_confidence_samples, \
     update_threshold
 from model import AlexNet
@@ -57,6 +57,39 @@ class PrintLogger:
 
     def flush(self):
         self.log_file.flush()
+        
+def get_dataset(dataset_name, split, transform):
+    """Factory function to get dataset based on name and split"""
+    
+    
+    dataset_configs = {
+        'caltech256': {
+            'class': Caltech256Dataset,
+            'n_classes': 256,
+            'path': f'data/caltech256/{split}'
+        },
+        'food101': {
+            'class': Food101Dataset,
+            'n_classes': 101,
+            'path': f'data/food101/{split}'
+        },
+        'cifar100': {
+            'class': CIFAR100Dataset,
+            'n_classes': 100,
+            'path': f'data/cifar100/{split}'
+        },
+        'mit67': {
+            'class': MITIndoor67Dataset,
+            'n_classes': 67,
+            'path': f'data/mit67/{split}'
+        }
+    }
+    
+    if dataset_name not in dataset_configs:
+        raise ValueError(f"Unknown dataset: {dataset_name}")
+        
+    config = dataset_configs[dataset_name]
+    return config['class'](root_dir=config['path'], transform=transform), config['n_classes']
 
 def ceal_learning_algorithm(du: DataLoader,
                             dl: DataLoader,
@@ -70,7 +103,8 @@ def ceal_learning_algorithm(du: DataLoader,
                             max_iter: int = 45,
                             alpha: float = 2.0,
                             lambda_weight: float = 1.0,
-                            gamma_weight: float = 1.0):
+                            gamma_weight: float = 1.0,
+                            n_classes: int = 256):
     """
     Algorithm1 : Learning algorithm of CEAL with class punishment and incorrectness rate.
     Parameters
@@ -111,7 +145,7 @@ def ceal_learning_algorithm(du: DataLoader,
         len(dl.sampler.indices)))
 
     # Number of classes
-    n_classes = 256
+    # n_classes = 256
 
     # Initialize n_c_labeled based on initial labeled data
     n_c_labeled = np.zeros(n_classes, dtype=np.float32)
@@ -251,12 +285,21 @@ def ceal_learning_algorithm(du: DataLoader,
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Active Learning with BBAL and Class Punishment and Incorrectness Rate')
-
-    parser.add_argument('--lambda_weight', type=float, default=1.0, help='Weight for class punishment')
-    parser.add_argument('--gamma_weight', type=float, default=1.0, help='Weight for incorrectness rate')
-    parser.add_argument('--training_epoch', type=int, default=10, help='Training epochs when validation')
-    parser.add_argument('--exp_type', type=str, default='gs', help='Experiment type for log naming')
+    parser = argparse.ArgumentParser(description='Active Learning with CEAL')
+    parser.add_argument('--dataset', type=str, default='caltech256',
+                        choices=['caltech256', 'food101', 'cifar100', 'mit67'],
+                        help='Dataset to use')
+    parser.add_argument('--lambda_weight', type=float, default=1.0,
+                        help='Weight for class punishment')
+    parser.add_argument('--gamma_weight', type=float, default=1.0,
+                        help='Weight for incorrectness rate')
+    parser.add_argument('--training_epoch', type=int, default=10,
+                        help='Training epochs when validation')
+    parser.add_argument('--batch_size', type=int, default=16,
+                        help='Batch size for training')
+    parser.add_argument('--exp_type', type=str, default='gs',
+                        help='Experiment type for log naming')
+    args = parser.parse_args()
     # parser.add_argument('--criteria', type=str, default='cl', help='Criteria for selection')
 
     args = parser.parse_args()
@@ -275,47 +318,44 @@ if __name__ == "__main__":
     )
     logger.info(f"Using device: {device}")
 
-    dataset_train = Caltech256Dataset(
-        root_dir="data/caltech256/train",
-        transform=transforms.Compose(
-            [SquarifyImage(),
-             RandomCrop(224),
-             Normalize(),
-             ToTensor()]))
+    # Setup transforms
+    transform = transforms.Compose([
+        SquarifyImage(),
+        RandomCrop(224),
+        Normalize(),
+        ToTensor()
+    ])
+    
+    # Get dataset and number of classes
+    dataset_train, n_classes = get_dataset(args.dataset, 'train', transform)
+    dataset_test, _ = get_dataset(args.dataset, 'test', transform)
 
-    dataset_test = Caltech256Dataset(
-        root_dir="data/caltech256/test",
-        transform=transforms.Compose(
-            [SquarifyImage(),
-             RandomCrop(224),
-             Normalize(),
-             ToTensor()]))
-
-    # Creating data indices for training and validation splits:
-    random_seed = 123
-    validation_split = 0.1  # 10%
-    shuffling_dataset = True
-    batch_size = 16
+    # Create splits
+    validation_split = 0.1
     dataset_size = len(dataset_train)
-
     indices = list(range(dataset_size))
     split = int(np.floor(validation_split * dataset_size))
-
-    if shuffling_dataset:
-        np.random.seed(random_seed)
-        np.random.shuffle(indices)
+    
+    np.random.seed(123)
+    np.random.shuffle(indices)
     train_indices, val_indices = indices[split:], indices[:split]
 
     # Creating PT data samplers and loaders:
     train_sampler = SubsetRandomSampler(train_indices)
     valid_sampler = SubsetRandomSampler(val_indices)
 
-    du = torch.utils.data.DataLoader(dataset_train, batch_size=batch_size,
-                                     sampler=train_sampler, num_workers=4, pin_memory=True)
-    dl = torch.utils.data.DataLoader(dataset_train, batch_size=batch_size,
-                                     sampler=valid_sampler, num_workers=4, pin_memory=True)
-    dtest = torch.utils.data.DataLoader(dataset_test, batch_size=batch_size,
-                                        num_workers=4, pin_memory=True)
+    du = DataLoader(dataset_train, batch_size=args.batch_size,
+                   sampler=train_sampler, num_workers=4, pin_memory=True)
+    dl = DataLoader(dataset_train, batch_size=args.batch_size,
+                   sampler=valid_sampler, num_workers=4, pin_memory=True)
+    dtest = DataLoader(dataset_test, batch_size=args.batch_size,
+                      num_workers=4, pin_memory=True)
 
-    ceal_learning_algorithm(du=du, dl=dl, dtest=dtest, epochs=args.training_epoch, 
-                            lambda_weight=args.lambda_weight, gamma_weight=args.gamma_weight)
+    # Run CEAL algorithm
+    ceal_learning_algorithm(
+        du=du, dl=dl, dtest=dtest,
+        epochs=args.training_epoch,
+        lambda_weight=args.lambda_weight,
+        gamma_weight=args.gamma_weight,
+        n_classes=n_classes
+    )
