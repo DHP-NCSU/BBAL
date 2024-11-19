@@ -1,5 +1,7 @@
 import sys
 import os
+import io
+from contextlib import redirect_stdout
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils import Caltech256Dataset, Normalize, RandomCrop, SquarifyImage, \
@@ -16,17 +18,45 @@ import torch
 import logging
 import argparse
 
-logging.basicConfig(format="%(levelname)s:%(name)s: %(message)s",
-                    level=logging.INFO)
-logger = logging.getLogger(__name__)
+def setup_logging(exp_type, lambda_weight, gamma_weight):
+    """Set up logging with automatic file name generation and suffix handling."""
+    os.makedirs('logs', exist_ok=True)
+    base_filename = f"logs/{exp_type}_{lambda_weight}_{gamma_weight}.log"
+    
+    if os.path.exists(base_filename):
+        counter = 1
+        while os.path.exists(f"logs/{exp_type}_{lambda_weight}_{gamma_weight}_{counter}.log"):
+            counter += 1
+        log_filename = f"logs/{exp_type}_{lambda_weight}_{gamma_weight}_{counter}.log"
+    else:
+        log_filename = base_filename
 
-# Set device to GPU if available (CUDA or MPS)
-device = (
-    torch.device("cuda") if torch.cuda.is_available()
-    else torch.device("mps") if torch.backends.mps.is_available()
-    else torch.device("cpu")
-)
-logger.info(f"Using device: {device}")
+    # Configure root logger to capture all output
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    
+    # Remove any existing handlers
+    root_logger.handlers = []
+    
+    # Add file handler
+    file_handler = logging.FileHandler(log_filename)
+    file_formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
+    file_handler.setFormatter(file_formatter)
+    root_logger.addHandler(file_handler)
+    
+    return logging.getLogger(__name__), log_filename
+
+class PrintLogger:
+    def __init__(self, log_file):
+        self.terminal = sys.stdout
+        self.log_file = open(log_file, 'a')
+
+    def write(self, message):
+        self.log_file.write(message)
+        self.log_file.flush()
+
+    def flush(self):
+        self.log_file.flush()
 
 def ceal_learning_algorithm(du: DataLoader,
                             dl: DataLoader,
@@ -221,17 +251,29 @@ def ceal_learning_algorithm(du: DataLoader,
 
 
 if __name__ == "__main__":
-
-    # import argparse
-
     parser = argparse.ArgumentParser(description='Active Learning with BBAL and Class Punishment and Incorrectness Rate')
 
     parser.add_argument('--lambda_weight', type=float, default=1.0, help='Weight for class punishment')
     parser.add_argument('--gamma_weight', type=float, default=1.0, help='Weight for incorrectness rate')
     parser.add_argument('--training_epoch', type=int, default=10, help='Training epochs when validation')
+    parser.add_argument('--exp_type', type=str, default='gs', help='Experiment type for log naming')
     # parser.add_argument('--criteria', type=str, default='cl', help='Criteria for selection')
 
     args = parser.parse_args()
+    
+    # Setup logging and get the log filename
+    logger, log_filename = setup_logging(args.exp_type, args.lambda_weight, args.gamma_weight)
+    
+    # Redirect stdout to our custom logger
+    sys.stdout = PrintLogger(log_filename)
+
+    # Set device to GPU if available (CUDA or MPS)
+    device = (
+        torch.device("cuda") if torch.cuda.is_available()
+        else torch.device("mps") if torch.backends.mps.is_available()
+        else torch.device("cpu")
+    )
+    logger.info(f"Using device: {device}")
 
     dataset_train = Caltech256Dataset(
         root_dir="data/caltech256/train",
