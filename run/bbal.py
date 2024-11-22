@@ -1,50 +1,36 @@
-import sys
-import os
+# Standard library imports
+import argparse
 import io
+import logging
+import os
+import sys
+import time
 from contextlib import redirect_stdout
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from utils import Normalize, RandomCrop, SquarifyImage, ToTensor
-from utils import Caltech256Dataset, Food101Dataset, CIFAR100Dataset, MITIndoor67Dataset
-from utils import get_high_confidence_samples, \
-    update_threshold
-from model import AlexNet
-from torch.utils.data import DataLoader
-from torchvision import transforms
-from torch.utils.data.sampler import SubsetRandomSampler
-
+# Third-party imports
 import numpy as np
 import torch
-import logging
-import argparse
+from torch.utils.data import DataLoader
+from torch.utils.data.sampler import SubsetRandomSampler
+from torchvision import transforms
 
-def setup_logging(exp_type, lambda_weight, gamma_weight):
-    """Set up logging with automatic file name generation and suffix handling."""
-    os.makedirs('logs', exist_ok=True)
-    base_filename = f"logs/{exp_type}_{lambda_weight}_{gamma_weight}.log"
-    
-    if os.path.exists(base_filename):
-        counter = 1
-        while os.path.exists(f"logs/{exp_type}_{lambda_weight}_{gamma_weight}_{counter}.log"):
-            counter += 1
-        log_filename = f"logs/{exp_type}_{lambda_weight}_{gamma_weight}_{counter}.log"
-    else:
-        log_filename = base_filename
+# Adjust the path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-    # Configure root logger to capture all output
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
-    
-    # Remove any existing handlers
-    root_logger.handlers = []
-    
-    # Add file handler
-    file_handler = logging.FileHandler(log_filename)
-    file_formatter = logging.Formatter("%(levelname)s:%(name)s: %(message)s")
-    file_handler.setFormatter(file_formatter)
-    root_logger.addHandler(file_handler)
-    
-    return logging.getLogger(__name__), log_filename
+# Local imports
+from model import create_model
+from utils import (
+    Caltech256Dataset,
+    CIFAR100Dataset,
+    Food101Dataset,
+    MITIndoor67Dataset,
+    Normalize,
+    RandomCrop,
+    SquarifyImage,
+    ToTensor,
+    get_high_confidence_samples,
+    update_threshold
+)
 
 class PrintLogger:
     def __init__(self, log_file):
@@ -52,15 +38,79 @@ class PrintLogger:
         self.log_file = open(log_file, 'a')
 
     def write(self, message):
+        # Write to both terminal and file
+        # self.terminal.write(message)
         self.log_file.write(message)
         self.log_file.flush()
 
     def flush(self):
+        # self.terminal.flush()
         self.log_file.flush()
+
+    def close(self):
+        self.log_file.close()
+
+def setup_logging(args):
+    """
+    Set up logging with hierarchical folder structure organized by model and dataset.
+    
+    Structure:
+    logs/
+    └── {model}/
+        └── {dataset}/
+            └── {exp_type}_{lambda}_{gamma}_{counter}.log
+    """
+    # Create base logs directory if it doesn't exist
+    base_dir = 'logs'
+    os.makedirs(base_dir, exist_ok=True)
+    
+    # Create model-specific directory
+    model_dir = os.path.join(base_dir, args.model)
+    os.makedirs(model_dir, exist_ok=True)
+    
+    # Create dataset-specific directory within model directory
+    dataset_dir = os.path.join(model_dir, args.dataset)
+    os.makedirs(dataset_dir, exist_ok=True)
+    
+    # Construct base log filename
+    base_filename = f"{args.exp_type}_{args.lambda_weight}_{args.gamma_weight}.log"
+    log_path = os.path.join(dataset_dir, base_filename)
+    
+    # Handle file naming conflicts
+    if os.path.exists(log_path):
+        counter = 1
+        while os.path.exists(os.path.join(
+            dataset_dir,
+            f"{args.exp_type}_{args.lambda_weight}_{args.gamma_weight}_{counter}.log"
+        )):
+            counter += 1
+        log_path = os.path.join(
+            dataset_dir,
+            f"{args.exp_type}_{args.lambda_weight}_{args.gamma_weight}_{counter}.log"
+        )
+    
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    
+    # Remove any existing handlers
+    root_logger.handlers = []
+    
+    # Add file handler with formatted output
+    file_handler = logging.FileHandler(log_path)
+    file_formatter = logging.Formatter(
+        "[%(asctime)s] %(levelname)s:%(name)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S"
+    )
+    file_handler.setFormatter(file_formatter)
+    root_logger.addHandler(file_handler)
+    
+    logger = logging.getLogger(__name__)
+    
+    return logger, log_path
         
 def get_dataset(dataset_name, split, transform):
     """Factory function to get dataset based on name and split"""
-    
     
     dataset_configs = {
         'caltech256': {
@@ -91,9 +141,10 @@ def get_dataset(dataset_name, split, transform):
     config = dataset_configs[dataset_name]
     return config['class'](root_dir=config['path'], transform=transform), config['n_classes']
 
-def ceal_learning_algorithm(du: DataLoader,
+def bbal_learning_algorithm(du: DataLoader,
                             dl: DataLoader,
                             dtest: DataLoader,
+                            model_name: str,
                             k: int = 1000,
                             delta_0: float = 0.005,
                             dr: float = 0.00033,
@@ -106,7 +157,7 @@ def ceal_learning_algorithm(du: DataLoader,
                             gamma_weight: float = 1.0,
                             n_classes: int = 256):
     """
-    Algorithm1 : Learning algorithm of CEAL with class punishment and incorrectness rate.
+    Algorithm1 : Learning algorithm of BBAL with class punishment and incorrectness rate.
     Parameters
     ----------
     du: DataLoader
@@ -115,6 +166,8 @@ def ceal_learning_algorithm(du: DataLoader,
         Labeled samples
     dtest : DataLoader
         Test data
+    model_name: str
+        Name of the model to use ('alexnet' or 'resnet18')
     k: int, (default = 1000)
         Number of uncertain samples to select
     delta_0: float
@@ -153,8 +206,8 @@ def ceal_learning_algorithm(du: DataLoader,
         label = dl.dataset.labels[idx]
         n_c_labeled[label] += 1
 
-    # Create the model
-    model = AlexNet(n_classes=n_classes, device=device)
+    # Create the model using factory
+    model = create_model(model_name=model_name, n_classes=n_classes, device=device)
 
     # Initialize the model
     logger.info('Initialize training the model on `dl` and test on `dtest`')
@@ -171,8 +224,7 @@ def ceal_learning_algorithm(du: DataLoader,
     print(f"====> Initial sd of accuracies: {sd_acc:.4f}")
 
     for iteration in range(max_iter):
-        # Compute Incorrectness_c
-        Incorrectness_c = np.array([1.0 - per_class_acc[i] for i in range(n_classes)])
+        iter_start = time.time()
 
         logger.info('Iteration: {}: run prediction on unlabeled data '
                     '`du` '.format(iteration))
@@ -192,6 +244,9 @@ def ceal_learning_algorithm(du: DataLoader,
 
         # Compute Punishment_c
         Punishment_c = (n_c_labeled / (n_c_total + epsilon)) ** alpha
+
+        # Compute Incorrectness_c
+        Incorrectness_c = np.array([1.0 - per_class_acc[i] for i in range(n_classes)])
 
         # Compute uncertainties
         uncertainties = -np.sum(pred_prob * np.log(pred_prob + epsilon), axis=1)
@@ -285,10 +340,13 @@ def ceal_learning_algorithm(du: DataLoader,
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Active Learning with CEAL')
+    parser = argparse.ArgumentParser(description='Active Learning with BBAL')
     parser.add_argument('--dataset', type=str, default='caltech256',
                         choices=['caltech256', 'food101', 'cifar100', 'mit67'],
                         help='Dataset to use')
+    parser.add_argument('--model', type=str, default='resnet18',
+                        choices=['alexnet', 'resnet18'],
+                        help='Model architecture to use')
     parser.add_argument('--lambda_weight', type=float, default=1.0,
                         help='Weight for class punishment')
     parser.add_argument('--gamma_weight', type=float, default=1.0,
@@ -304,11 +362,20 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    # Setup logging and get the log filename
-    logger, log_filename = setup_logging(args.exp_type, args.lambda_weight, args.gamma_weight)
+    # Setup logging with the new structure
+    logger, log_path = setup_logging(args)
     
     # Redirect stdout to our custom logger
-    sys.stdout = PrintLogger(log_filename)
+    sys.stdout = PrintLogger(log_path)
+
+    # Log the configuration
+    logger.info(f"Model: {args.model}")
+    logger.info(f"Dataset: {args.dataset}")
+    logger.info(f"Experiment type: {args.exp_type}")
+    logger.info(f"Lambda weight: {args.lambda_weight}")
+    logger.info(f"Gamma weight: {args.gamma_weight}")
+    logger.info(f"Training epochs: {args.training_epoch}")
+    logger.info(f"Batch size: {args.batch_size}")
 
     # Set device to GPU if available (CUDA or MPS)
     device = (
@@ -352,8 +419,11 @@ if __name__ == "__main__":
                       num_workers=4, pin_memory=True)
 
     # Run CEAL algorithm
-    ceal_learning_algorithm(
-        du=du, dl=dl, dtest=dtest,
+    bbal_learning_algorithm(
+        du=du, 
+        dl=dl, 
+        dtest=dtest,
+        model_name=args.model,
         epochs=args.training_epoch,
         lambda_weight=args.lambda_weight,
         gamma_weight=args.gamma_weight,

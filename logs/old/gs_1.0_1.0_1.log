@@ -1,0 +1,8 @@
+INFO:__main__: Using device: cuda
+INFO:__main__: Initial configuration: len(du): 21527, len(dl): 2391 
+INFO:__main__: Initialize training the model on `dl` and test on `dtest`
+Train Epoch: 0 [0/2391 (0%)]	Loss: 5.473038
+====> Epoch: 0 Average loss: 0.2608
+Train Epoch: 1 [0/2391 (0%)]	Loss: 1.948552
+====> Epoch: 1 Average loss: 0.0994
+Train Epoch: 2 [0/2391 (0%)]	Loss: 0.741812
