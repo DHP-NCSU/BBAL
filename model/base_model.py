@@ -1,4 +1,4 @@
-from typing import Optional, Callable
+from typing import Optional, Callable, Dict, Any
 from torch.utils.data import DataLoader
 from torch.nn.functional import softmax
 import numpy as np
@@ -7,6 +7,7 @@ import torch.optim as optim
 import torch
 import torch.optim as Optimizer
 import logging
+import time
 
 logging.basicConfig(format="%(levelname)s:%(name)s: %(message)s",
                     level=logging.INFO)
@@ -137,10 +138,94 @@ class BaseModel:
                     (predict_results, outputs.cpu().numpy()))
         return predict_results
 
+    def evaluate_per_class(self, test_loader: DataLoader) -> (float,float,dict):
+        self.model.eval()
+        all_labels = []
+        all_predictions = []
+        confusion_mat = torch.zeros(self.n_classes,self.n_classes)
+        with torch.no_grad():
+            for batch_idx, sample_batched in enumerate(test_loader):
+                if isinstance(sample_batched, dict):
+                    data, labels = sample_batched['image'], sample_batched['label']
+                else:
+                    data, labels = sample_batched
+                
+                data = data.to(self.device).float()
+                labels = labels.to(self.device)
+                outputs = self.model(data)
+                _, predicted = torch.max(outputs.data, 1)
+                
+                for t, p in zip(labels.view(-1), predicted.view(-1)):
+                    confusion_mat[t.long(), p.long()] += 1
+                #all_labels.extend(labels.cpu().numpy())
+                #all_predictions.extend(predicted.cpu().numpy())
+
+        confusion_mat = confusion_mat.cpu().numpy()
+        #all_labels = np.array(all_labels)
+        #all_predictions = np.array(all_predictions)
+
+        # 1. Calculate confusion matrix
+        #conf_matrix = confusion_matrix(all_labels, all_predictions, labels=range(self.n_classes))
+
+        # 2. Print confusion matrix
+        print("Confusion Matrix:")
+        print(confusion_mat)
+
+        # 3. Calculate metrics
+        results = {}
+        start_time = time.time()
+        results['overall_accuracy'] = np.trace(confusion_mat) / np.sum(confusion_mat)
+        results['per_class_precision'] = {}
+        results['per_class_recall'] = {}
+        results['per_class_false_alarm'] = {}
+        
+        
+        precisions = []
+        recalls = []
+        false_alarms = []
+
+        for i in range(self.n_classes):
+            tp = confusion_mat[i, i]
+            fp = np.sum(confusion_mat[:, i]) - tp
+            fn = np.sum(confusion_mat[i, :]) - tp
+            tn = np.sum(confusion_mat) - tp - fp - fn
+
+            precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+            results['per_class_precision'][i] = precision
+            precisions.append(precision)
+            recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+            results['per_class_recall'][i] = recall
+            recalls.append(recall)
+            false_alarm = fp / (fp + tn) if (fp + tn) > 0 else 0.0
+            results['per_class_false_alarm'][i] = false_alarm 
+            false_alarms.append(false_alarm)
+
+        # Calculate standard deviations
+        results['per_precision_sd'] = np.std(precisions)
+        results['per_recall_sd'] = np.std(recalls)
+        results['per_false_alarm_sd'] = np.std(false_alarms)
+
+        # 4. Prepare results in JSON-like format
+        
+        results = {
+            "overall_acc": float(results['overall_accuracy']),
+            "per_class_precision": {k: float(v) for k, v in results['per_class_precision'].items()},
+            "per_class_recall": {k: float(v) for k, v in results['per_class_recall'].items()},
+            "per_class_falsealarm": {k: float(v) for k, v in results['per_class_false_alarm'].items()},
+            "per_precision_sd": float(results['per_precision_sd']),
+            "per_recall_sd": float(results['per_recall_sd']),
+            "per_false_alarm_sd": float(results['per_false_alarm_sd'])
+        }
+        end_time = time.time()
+        # Print results
+        results['spend_time'] = end_time - start_time
+        return results['overall_accuracy'], results['per_precision_sd'],results['per_class_precision']
+
+"""
     def evaluate_per_class(self, test_loader: DataLoader) -> (float, float, dict):
-        """
-        Evaluate the model's accuracy for each class
-        """
+        
+        #Evaluate the model's accuracy for each class
+       
         self.model.eval()
         correct_per_class = np.zeros(self.n_classes)
         total_per_class = np.zeros(self.n_classes)
@@ -183,3 +268,4 @@ class BaseModel:
         # print(overall_acc, per_class_precision, per_class_recall, per_calss_falsealarm) # json
         # {'overall_acc': 0.4, 'dfs'}
         # count[i, j]: ground truth:j, predicted: i, number
+"""

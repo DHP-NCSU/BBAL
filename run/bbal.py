@@ -219,9 +219,9 @@ def bbal_learning_algorithm(du: DataLoader,
     acc, sd_acc, per_class_acc = model.evaluate_per_class(test_loader=dtest)
 
     # print('====> Initial accuracy: {} '.format(acc))
-    print(f"====> Initial accuracy: {acc * 100:.2f}%")
-    print(f"====> Initial per-class accuracies: {per_class_acc}")
-    print(f"====> Initial sd of accuracies: {sd_acc:.4f}")
+    #print(f"====> Initial accuracy: {acc * 100:.2f}%")
+    #print(f"====> Initial per-class accuracies: {per_class_acc}")
+    #print(f"====> Initial sd of accuracies: {sd_acc:.4f}")
 
     for iteration in range(max_iter):
         iter_start = time.time()
