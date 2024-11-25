@@ -8,6 +8,8 @@ import torch
 import torch.optim as Optimizer
 import logging
 import time
+import io
+import os
 
 logging.basicConfig(format="%(levelname)s:%(name)s: %(message)s",
                     level=logging.INFO)
@@ -92,7 +94,7 @@ class BaseModel:
         self.model.train()
         optimizer = optim.SGD(
             filter(lambda p: p.requires_grad, self.model.parameters()),
-            lr=0.001, momentum=0.9)
+            lr=0.004, momentum=0.9)
 
         criterion = nn.CrossEntropyLoss()
         for epoch in range(epochs):
@@ -138,11 +140,31 @@ class BaseModel:
                     (predict_results, outputs.cpu().numpy()))
         return predict_results
 
-    def evaluate_per_class(self, test_loader: DataLoader) -> (float,float,dict):
+    def evaluate_per_class(self, test_loader: DataLoader, logger: Optional[logging.Logger] = None, 
+                      log_path: Optional[str] = None, iteration: Optional[int] = None) -> Dict[int, float]:
+        """
+        Evaluate model's performance per class and save results
+        
+        Parameters:
+        -----------
+        test_loader : DataLoader
+            DataLoader containing test data
+        logger : Optional[logging.Logger]
+            Logger instance for writing results to file
+        log_path : Optional[str]
+            Path to the log file, used to determine where to save confusion matrix
+        iteration : Optional[int]
+            Current iteration number for naming the confusion matrix file
+            
+        Returns:
+        --------
+        Dict[int, float]
+            Dictionary containing per-class recall values
+        """
         self.model.eval()
-        all_labels = []
-        all_predictions = []
-        confusion_mat = torch.zeros(self.n_classes,self.n_classes)
+        confusion_mat = torch.zeros(self.n_classes, self.n_classes)
+        
+        # Compute confusion matrix
         with torch.no_grad():
             for batch_idx, sample_batched in enumerate(test_loader):
                 if isinstance(sample_batched, dict):
@@ -157,32 +179,53 @@ class BaseModel:
                 
                 for t, p in zip(labels.view(-1), predicted.view(-1)):
                     confusion_mat[t.long(), p.long()] += 1
-                #all_labels.extend(labels.cpu().numpy())
-                #all_predictions.extend(predicted.cpu().numpy())
 
         confusion_mat = confusion_mat.cpu().numpy()
-        #all_labels = np.array(all_labels)
-        #all_predictions = np.array(all_predictions)
-
-        # 1. Calculate confusion matrix
-        #conf_matrix = confusion_matrix(all_labels, all_predictions, labels=range(self.n_classes))
-
-        # 2. Print confusion matrix
-        print("Confusion Matrix:")
-        print(confusion_mat)
-
-        # 3. Calculate metrics
-        results = {}
-        start_time = time.time()
-        results['overall_accuracy'] = np.trace(confusion_mat) / np.sum(confusion_mat)
-        results['per_class_precision'] = {}
-        results['per_class_recall'] = {}
-        results['per_class_false_alarm'] = {}
         
+        # Save confusion matrix to .npy file if log_path is provided
+        if log_path:
+            # Get the components from log path
+            log_dir = os.path.dirname(log_path)  # Gets the directory path
+            log_basename = os.path.basename(log_path)  # Gets the filename
+            base_name = os.path.splitext(log_basename)[0]  # Removes the extension
+            
+            # Create confusion matrices directory parallel to logs
+            # If log_path is 'logs/model/dataset/exp.log'
+            # conf_mat_path will be 'confusion_matrices/model/dataset/exp/'
+            conf_mat_base_dir = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(log_dir))),  # Go up 3 levels from log file
+                'confusion_matrices'
+            )
+            
+            # Recreate the same subdirectory structure as logs
+            relative_path = os.path.relpath(log_dir, 'logs')  # Get path relative to logs directory
+            conf_mat_dir = os.path.join(conf_mat_base_dir, relative_path, base_name)
+            
+            # Create the directory if it doesn't exist
+            os.makedirs(conf_mat_dir, exist_ok=True)
+            
+            # Create confusion matrix filename
+            if iteration is not None:
+                conf_mat_filename = f"iter_{iteration}.npy"
+            else:
+                conf_mat_filename = "initial.npy"
+                
+            conf_mat_path = os.path.join(conf_mat_dir, conf_mat_filename)
+            
+            # Save the confusion matrix
+            np.save(conf_mat_path, confusion_mat)
+            if logger:
+                logger.info(f"Confusion matrix saved to: {conf_mat_path}")
         
+        # Calculate metrics
         precisions = []
         recalls = []
         false_alarms = []
+        # per_class_precision = {}
+        per_class_recall = {}
+        # per_class_false_alarm = {}
+
+        overall_acc = np.trace(confusion_mat) / np.sum(confusion_mat)
 
         for i in range(self.n_classes):
             tp = confusion_mat[i, i]
@@ -190,36 +233,45 @@ class BaseModel:
             fn = np.sum(confusion_mat[i, :]) - tp
             tn = np.sum(confusion_mat) - tp - fp - fn
 
+            # Calculate precision
             precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
-            results['per_class_precision'][i] = precision
+            # per_class_precision[i] = precision
             precisions.append(precision)
+            
+            # Calculate recall
             recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-            results['per_class_recall'][i] = recall
+            per_class_recall[i] = recall
             recalls.append(recall)
+            
+            # Calculate false alarm
             false_alarm = fp / (fp + tn) if (fp + tn) > 0 else 0.0
-            results['per_class_false_alarm'][i] = false_alarm 
+            # per_class_false_alarm[i] = false_alarm
             false_alarms.append(false_alarm)
 
-        # Calculate standard deviations
-        results['per_precision_sd'] = np.std(precisions)
-        results['per_recall_sd'] = np.std(recalls)
-        results['per_false_alarm_sd'] = np.std(false_alarms)
+        # Calculate means
+        mean_precision = np.mean(precisions)
+        mean_recall = np.mean(recalls)
+        mean_false_alarm = np.mean(false_alarms)
 
-        # 4. Prepare results in JSON-like format
-        
-        results = {
-            "overall_acc": float(results['overall_accuracy']),
-            "per_class_precision": {k: float(v) for k, v in results['per_class_precision'].items()},
-            "per_class_recall": {k: float(v) for k, v in results['per_class_recall'].items()},
-            "per_class_falsealarm": {k: float(v) for k, v in results['per_class_false_alarm'].items()},
-            "per_precision_sd": float(results['per_precision_sd']),
-            "per_recall_sd": float(results['per_recall_sd']),
-            "per_false_alarm_sd": float(results['per_false_alarm_sd'])
-        }
-        end_time = time.time()
-        # Print results
-        results['spend_time'] = end_time - start_time
-        return results['overall_accuracy'], results['per_precision_sd'],results['per_class_precision']
+        # Calculate standard deviations
+        precision_sd = np.std(precisions)
+        recall_sd = np.std(recalls)
+        false_alarm_sd = np.std(false_alarms)
+
+        # Log metrics
+        if logger:
+            logger.info(f"Overall Accuracy: {overall_acc:.4f}")
+            logger.info(f"Mean Precision: {mean_precision:.4f}")
+            logger.info(f"Mean Recall: {mean_recall:.4f}")
+            logger.info(f"Mean False Alarm: {mean_false_alarm:.4f}")
+            logger.info(f"Per-class Precision SD: {precision_sd:.4f}")
+            logger.info(f"Per-class Recall SD: {recall_sd:.4f}")
+            logger.info(f"Per-class False Alarm SD: {false_alarm_sd:.4f}")
+            # logger.info(f"Per-class Precision: {per_class_precision}")
+            # logger.info(f"Per-class Recall: {per_class_recall}")
+            # logger.info(f"Per-class False Alarm: {per_class_false_alarm}")
+
+        return per_class_recall
 
 """
     def evaluate_per_class(self, test_loader: DataLoader) -> (float, float, dict):

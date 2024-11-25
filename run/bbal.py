@@ -216,12 +216,12 @@ def bbal_learning_algorithm(du: DataLoader,
 
     # Evaluate model on dtest
     # acc = model.evaluate(test_loader=dtest)
-    acc, sd_acc, per_class_acc = model.evaluate_per_class(test_loader=dtest)
+    per_class_acc = model.evaluate_per_class(test_loader=dtest, logger=logger, log_path=log_path)
 
     # print('====> Initial accuracy: {} '.format(acc))
-    #print(f"====> Initial accuracy: {acc * 100:.2f}%")
-    #print(f"====> Initial per-class accuracies: {per_class_acc}")
-    #print(f"====> Initial sd of accuracies: {sd_acc:.4f}")
+    # print(f"====> Initial accuracy: {acc * 100:.2f}%")
+    # print(f"====> Initial per-class accuracies: {per_class_acc}")
+    # print(f"====> Initial sd of accuracies: {sd_acc:.4f}")
 
     for iteration in range(max_iter):
         iter_start = time.time()
@@ -230,6 +230,13 @@ def bbal_learning_algorithm(du: DataLoader,
                     '`du` '.format(iteration))
 
         pred_prob = model.predict(test_loader=du)
+
+        epsilon = 1e-10
+
+        # Compute uncertainties
+        uncertainties = -np.sum(pred_prob * np.log(pred_prob + epsilon), axis=1)
+
+        cb_start = time.time()
 
         # Save a copy of du.sampler.indices to ensure consistent mapping
         current_du_indices = du.sampler.indices.copy()
@@ -240,16 +247,11 @@ def bbal_learning_algorithm(du: DataLoader,
         # Estimate n_c_total
         n_c_total = pred_prob.sum(axis=0)  # shape: (n_classes,)
 
-        epsilon = 1e-10
-
         # Compute Punishment_c
         Punishment_c = (n_c_labeled / (n_c_total + epsilon)) ** alpha
 
         # Compute Incorrectness_c
         Incorrectness_c = np.array([1.0 - per_class_acc[i] for i in range(n_classes)])
-
-        # Compute uncertainties
-        uncertainties = -np.sum(pred_prob * np.log(pred_prob + epsilon), axis=1)
 
         # normalize the criteria
         def norm(arr):
@@ -261,6 +263,8 @@ def bbal_learning_algorithm(du: DataLoader,
         # breakpoint()
         # Compute adjusted scores
         adjusted_scores = norm(uncertainties) - lambda_weight * norm(Punishment_c[predicted_classes]) + gamma_weight * norm(Incorrectness_c[predicted_classes])
+
+        cb_end = time.time()
 
         # Select top k samples with highest adjusted scores
         k = min(k, len(adjusted_scores))
@@ -330,13 +334,19 @@ def bbal_learning_algorithm(du: DataLoader,
             # update delta_0
             delta_0 = update_threshold(delta=delta_0, dr=dr, t=iteration)
 
-        acc, sd_acc, per_class_acc = model.evaluate_per_class(test_loader=dtest)
+        per_class_acc = model.evaluate_per_class(test_loader=dtest, logger=logger, 
+                                       log_path=log_path, iteration=iteration)
 
-        print(
-            "Iteration: {}, len(dl): {}, len(du): {}, len(dh) {}\n"
-            "acc: {}, sd of accuracies: {}, per-class accuracies: {}".format(
-                iteration, len(dl.sampler.indices),
-                len(du.sampler.indices), len(hcs_indices), acc, sd_acc, per_class_acc))
+        iter_end = time.time()
+        print(f"Total time: {iter_end - iter_start}")
+        print(f"Additional time: {cb_end - cb_start}")
+
+
+        # print(
+        #     "Iteration: {}, len(dl): {}, len(du): {}, len(dh) {}\n"
+        #     "acc: {}, sd of accuracies: {}, per-class accuracies: {}".format(
+        #         iteration, len(dl.sampler.indices),
+        #         len(du.sampler.indices), len(hcs_indices), acc, sd_acc, per_class_acc))
 
 
 if __name__ == "__main__":
@@ -353,7 +363,7 @@ if __name__ == "__main__":
                         help='Weight for incorrectness rate')
     parser.add_argument('--training_epoch', type=int, default=10,
                         help='Training epochs when validation')
-    parser.add_argument('--batch_size', type=int, default=16,
+    parser.add_argument('--batch_size', type=int, default=64,
                         help='Batch size for training')
     parser.add_argument('--exp_type', type=str, default='gs',
                         help='Experiment type for log naming')
@@ -424,6 +434,7 @@ if __name__ == "__main__":
         dl=dl, 
         dtest=dtest,
         model_name=args.model,
+        k=2000,
         epochs=args.training_epoch,
         lambda_weight=args.lambda_weight,
         gamma_weight=args.gamma_weight,
