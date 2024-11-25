@@ -1,0 +1,91 @@
+[2024-11-25 16:13:57] INFO:__main__: Model: resnet18
+[2024-11-25 16:13:57] INFO:__main__: Dataset: caltech256
+[2024-11-25 16:13:57] INFO:__main__: Experiment type: gs
+[2024-11-25 16:13:57] INFO:__main__: Lambda weight: 1.0
+[2024-11-25 16:13:57] INFO:__main__: Gamma weight: 1.0
+[2024-11-25 16:13:57] INFO:__main__: Training epochs: 10
+[2024-11-25 16:13:57] INFO:__main__: Batch size: 64
+[2024-11-25 16:13:57] INFO:__main__: Using device: cuda
+[2024-11-25 16:13:57] INFO:__main__: Initial configuration: len(du): 21527, len(dl): 2391 
+[2024-11-25 16:13:57] INFO:__main__: Initialize training the model on `dl` and test on `dtest`
+Train Epoch: 0 [0/2391 (0%)]	Loss: 5.739501
+====> Epoch: 0 Average loss: 0.0864
+Train Epoch: 1 [0/2391 (0%)]	Loss: 4.726725
+====> Epoch: 1 Average loss: 0.0730
+Train Epoch: 2 [0/2391 (0%)]	Loss: 4.019454
+====> Epoch: 2 Average loss: 0.0625
+Train Epoch: 3 [0/2391 (0%)]	Loss: 3.538888
+====> Epoch: 3 Average loss: 0.0541
+Train Epoch: 4 [0/2391 (0%)]	Loss: 2.651332
+====> Epoch: 4 Average loss: 0.0478
+Train Epoch: 5 [0/2391 (0%)]	Loss: 2.340608
+====> Epoch: 5 Average loss: 0.0420
+Train Epoch: 6 [0/2391 (0%)]	Loss: 2.558725
+====> Epoch: 6 Average loss: 0.0371
+Train Epoch: 7 [0/2391 (0%)]	Loss: 1.865948
+====> Epoch: 7 Average loss: 0.0332
+Train Epoch: 8 [0/2391 (0%)]	Loss: 2.014365
+====> Epoch: 8 Average loss: 0.0299
+Train Epoch: 9 [0/2391 (0%)]	Loss: 1.625165
+====> Epoch: 9 Average loss: 0.0268
+[2024-11-25 16:31:59] INFO:__main__: Confusion matrix saved to: confusion_matrices/resnet18/caltech256/gs_1.0_1.0/initial.npy
+[2024-11-25 16:31:59] INFO:__main__: Overall Accuracy: 0.5515
+[2024-11-25 16:31:59] INFO:__main__: Mean Precision: 0.5436
+[2024-11-25 16:31:59] INFO:__main__: Mean Recall: 0.4926
+[2024-11-25 16:31:59] INFO:__main__: Mean False Alarm: 0.0018
+[2024-11-25 16:31:59] INFO:__main__: Per-class Precision SD: 0.3000
+[2024-11-25 16:31:59] INFO:__main__: Per-class Recall SD: 0.3214
+[2024-11-25 16:31:59] INFO:__main__: Per-class False Alarm SD: 0.0024
+[2024-11-25 16:31:59] INFO:__main__: Iteration: 0: run prediction on unlabeled data `du` 
+[2024-11-25 16:44:09] INFO:__main__: Update size of `dl`  and `du` by adding uncertain 2000 samples in `dl` len(dl): 4391, len(du) 21527
+[2024-11-25 16:44:09] INFO:__main__: Update size of `dl`  and `du` by adding 6 hcs samples in `dl` len(dl): 4397, len(du) 21527
+[2024-11-25 16:44:10] INFO:__main__: Iteration: 0 fine-tune the model on dh U dl
+Train Epoch: 0 [0/4397 (0%)]	Loss: 2.103079
+====> Epoch: 0 Average loss: 0.0306
+Train Epoch: 1 [0/4397 (0%)]	Loss: 1.581233
+====> Epoch: 1 Average loss: 0.0269
+Train Epoch: 2 [0/4397 (0%)]	Loss: 1.372716
+====> Epoch: 2 Average loss: 0.0241
+Train Epoch: 3 [0/4397 (0%)]	Loss: 1.696025
+====> Epoch: 3 Average loss: 0.0217
+Train Epoch: 4 [0/4397 (0%)]	Loss: 1.310710
+====> Epoch: 4 Average loss: 0.0197
+Train Epoch: 5 [0/4397 (0%)]	Loss: 0.901592
+====> Epoch: 5 Average loss: 0.0180
+Train Epoch: 6 [0/4397 (0%)]	Loss: 0.840086
+====> Epoch: 6 Average loss: 0.0167
+Train Epoch: 7 [0/4397 (0%)]	Loss: 0.992916
+====> Epoch: 7 Average loss: 0.0155
+Train Epoch: 8 [0/4397 (0%)]	Loss: 0.859109
+====> Epoch: 8 Average loss: 0.0144
+Train Epoch: 9 [0/4397 (0%)]	Loss: 0.763267
+====> Epoch: 9 Average loss: 0.0135
+[2024-11-25 17:17:37] INFO:__main__: Confusion matrix saved to: confusion_matrices/resnet18/caltech256/gs_1.0_1.0/iter_0.npy
+[2024-11-25 17:17:37] INFO:__main__: Overall Accuracy: 0.6987
+[2024-11-25 17:17:37] INFO:__main__: Mean Precision: 0.7093
+[2024-11-25 17:17:37] INFO:__main__: Mean Recall: 0.6660
+[2024-11-25 17:17:37] INFO:__main__: Mean False Alarm: 0.0012
+[2024-11-25 17:17:37] INFO:__main__: Per-class Precision SD: 0.1799
+[2024-11-25 17:17:37] INFO:__main__: Per-class Recall SD: 0.2170
+[2024-11-25 17:17:37] INFO:__main__: Per-class False Alarm SD: 0.0013
+Total time: 2737.8421852588654
+Additional time: 0.011082649230957031
+[2024-11-25 17:17:37] INFO:__main__: Iteration: 1: run prediction on unlabeled data `du` 
+[2024-11-25 17:28:19] INFO:__main__: Update size of `dl`  and `du` by adding uncertain 2000 samples in `dl` len(dl): 6397, len(du) 19521
+[2024-11-25 17:28:19] INFO:__main__: Update size of `dl`  and `du` by adding 42 hcs samples in `dl` len(dl): 6439, len(du) 19521
+[2024-11-25 17:28:19] INFO:__main__: Iteration: 1 fine-tune the model on dh U dl
+Train Epoch: 0 [0/6439 (0%)]	Loss: 1.142912
+====> Epoch: 0 Average loss: 0.0167
+Train Epoch: 1 [0/6439 (0%)]	Loss: 1.002505
+====> Epoch: 1 Average loss: 0.0154
+Train Epoch: 2 [0/6439 (0%)]	Loss: 0.864417
+====> Epoch: 2 Average loss: 0.0145
+Train Epoch: 3 [0/6439 (0%)]	Loss: 0.852591
+====> Epoch: 3 Average loss: 0.0136
+Train Epoch: 4 [0/6439 (0%)]	Loss: 1.087793
+====> Epoch: 4 Average loss: 0.0129
+Train Epoch: 5 [0/6439 (0%)]	Loss: 0.771921
+====> Epoch: 5 Average loss: 0.0122
+Train Epoch: 6 [0/6439 (0%)]	Loss: 0.753327
+====> Epoch: 6 Average loss: 0.0116
+Train Epoch: 7 [0/6439 (0%)]	Loss: 0.734039

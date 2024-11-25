@@ -1,4 +1,4 @@
-for l in 0.0 0.5 1.0
+for l in 0.5 1.0
 do
     for g in 0.0 0.5 1.0
     do
