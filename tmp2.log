@@ -1,0 +1,396 @@
+
+Config: gs_0.0_0.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099926	0.00023673
+macro_precision     0.75379762	0.06518362
+macro_recall        0.72208742	0.07072334
+macro_f1            0.72680796	0.08046383
+weighted_precision  0.75791064	0.06122683
+weighted_recall     0.74547935	0.06026865
+weighted_f1         0.74161507	0.07182644
+
+Config: gs_0.0_0.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099474	0.00024363
+macro_precision     0.75372919	0.06322832
+macro_recall        0.72251668	0.07333212
+macro_f1            0.72666336	0.08240216
+weighted_precision  0.76009901	0.05956790
+weighted_recall     0.74658819	0.06202451
+weighted_f1         0.74290999	0.07337441
+
+Config: gs_0.0_0.5
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099381	0.00024138
+macro_precision     0.75164101	0.06400177
+macro_recall        0.72297594	0.07245468
+macro_f1            0.72558628	0.08223705
+weighted_precision  0.75920722	0.06062202
+weighted_recall     0.74681306	0.06142026
+weighted_f1         0.74233617	0.07357620
+
+Config: gs_0.0_1.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00098250	0.00025078
+macro_precision     0.75501263	0.06820417
+macro_recall        0.72679584	0.07531332
+macro_f1            0.72931302	0.08520615
+weighted_precision  0.76174236	0.06510943
+weighted_recall     0.74969759	0.06381501
+weighted_f1         0.74518180	0.07646705
+
+Config: gs_0.0_2.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099748	0.00024568
+macro_precision     0.75351421	0.06579408
+macro_recall        0.72198624	0.07342686
+macro_f1            0.72600021	0.08319150
+weighted_precision  0.76038632	0.06264548
+weighted_recall     0.74588257	0.06252171
+weighted_f1         0.74245322	0.07488880
+
+Config: gs_0.0_2.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00094624	0.00024281
+macro_precision     0.76155648	0.05791882
+macro_recall        0.73701364	0.07316558
+macro_f1            0.73861717	0.08037504
+weighted_precision  0.76931106	0.05646506
+weighted_recall     0.75894048	0.06177825
+weighted_f1         0.75442888	0.07215322
+
+Config: gs_0.5_0.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099835	0.00024454
+macro_precision     0.75186909	0.06231668
+macro_recall        0.72169652	0.07361225
+macro_f1            0.72511244	0.08253008
+weighted_precision  0.75895712	0.05970220
+weighted_recall     0.74564994	0.06220556
+weighted_f1         0.74172697	0.07402864
+
+Config: gs_0.5_0.5
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099830	0.00023950
+macro_precision     0.74995424	0.06470721
+macro_recall        0.72249371	0.07276888
+macro_f1            0.72523946	0.08224549
+weighted_precision  0.75701783	0.06115431
+weighted_recall     0.74568096	0.06096798
+weighted_f1         0.74128478	0.07308854
+
+Config: gs_0.5_1.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00098361	0.00024374
+macro_precision     0.75921098	0.06239778
+macro_recall        0.72667303	0.07387981
+macro_f1            0.73137126	0.08209097
+weighted_precision  0.76457515	0.05928365
+weighted_recall     0.74943395	0.06202034
+weighted_f1         0.74644900	0.07338034
+
+Config: gs_0.5_2.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00095288	0.00023942
+macro_precision     0.75996899	0.06054421
+macro_recall        0.73444826	0.07304889
+macro_f1            0.73634859	0.08038179
+weighted_precision  0.76854847	0.05887229
+weighted_recall     0.75722682	0.06088842
+weighted_f1         0.75318665	0.07210466
+
+Config: gs_1.0_0.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099354	0.00024677
+macro_precision     0.75451163	0.06590947
+macro_recall        0.72433683	0.07444601
+macro_f1            0.72782428	0.08354246
+weighted_precision  0.76027100	0.06130256
+weighted_recall     0.74689836	0.06281558
+weighted_f1         0.74294100	0.07425819
+
+Config: gs_1.0_0.5
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00098604	0.00024343
+macro_precision     0.75476614	0.06840357
+macro_recall        0.72515989	0.07282262
+macro_f1            0.72841439	0.08177102
+weighted_precision  0.76074484	0.06471714
+weighted_recall     0.74882137	0.06195816
+weighted_f1         0.74438611	0.07329351
+
+Config: gs_1.0_1.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00098538	0.00024198
+macro_precision     0.75477671	0.06500520
+macro_recall        0.72715423	0.07335739
+macro_f1            0.72994675	0.08295623
+weighted_precision  0.76188931	0.06117930
+weighted_recall     0.74895319	0.06160423
+weighted_f1         0.74531780	0.07369315
+
+Config: gs_1.0_2.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00094501	0.00024606
+macro_precision     0.76200168	0.05680001
+macro_recall        0.73720924	0.07435548
+macro_f1            0.73829191	0.08180777
+weighted_precision  0.77000011	0.05547089
+weighted_recall     0.75923513	0.06258711
+weighted_f1         0.75449975	0.07334111
+
+Config: gs_2.0_0.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00098972	0.00024560
+macro_precision     0.75392793	0.06526098
+macro_recall        0.72402041	0.07356298
+macro_f1            0.72716856	0.08245244
+weighted_precision  0.76185776	0.06196486
+weighted_recall     0.74783660	0.06250315
+weighted_f1         0.74426711	0.07394369
+
+Config: gs_2.0_0.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00093704	0.00024923
+macro_precision     0.76163993	0.05919307
+macro_recall        0.73879907	0.07507942
+macro_f1            0.73973995	0.08248540
+weighted_precision  0.77147372	0.05822384
+weighted_recall     0.76122018	0.06340201
+weighted_f1         0.75694672	0.07446808
+
+Config: gs_2.0_0.5
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00094149	0.00024111
+macro_precision     0.76371349	0.06013873
+macro_recall        0.73763416	0.07345062
+macro_f1            0.73949279	0.08101662
+weighted_precision  0.77217304	0.05700296
+weighted_recall     0.76012685	0.06137353
+weighted_f1         0.75605552	0.07181297
+
+Config: gs_2.0_1.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00094708	0.00024000
+macro_precision     0.75835447	0.06440349
+macro_recall        0.73520341	0.07303935
+macro_f1            0.73657005	0.08120024
+weighted_precision  0.76706495	0.06137508
+weighted_recall     0.75870010	0.06106394
+weighted_f1         0.75347537	0.07266690
+
+Config: gs_2.0_2.0
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099273	0.00024368
+macro_precision     0.75188484	0.06505013
+macro_recall        0.72410943	0.07366177
+macro_f1            0.72707368	0.08296260
+weighted_precision  0.75926589	0.06154010
+weighted_recall     0.74707670	0.06201495
+weighted_f1         0.74329147	0.07402643
+
+Config: gs_2.0_2.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00094982	0.00024228
+macro_precision     0.75928726	0.06764062
+macro_recall        0.73552166	0.07285990
+macro_f1            0.73741689	0.08174106
+weighted_precision  0.76740392	0.06367833
+weighted_recall     0.75801774	0.06166403
+weighted_f1         0.75363160	0.07318477
+
+Config: gs_0.5_0.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00100398	0.00024270
+macro_precision     0.74825844	0.06528088
+macro_recall        0.72031548	0.07299172
+macro_f1            0.72311532	0.08146108
+weighted_precision  0.75722057	0.06224130
+weighted_recall     0.74420768	0.06175310
+weighted_f1         0.74058085	0.07307378
+
+Config: gs_1.0_0.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00100265	0.00024201
+macro_precision     0.74685412	0.06432031
+macro_recall        0.72067956	0.07279140
+macro_f1            0.72354318	0.08099818
+weighted_precision  0.75617559	0.06191137
+weighted_recall     0.74453335	0.06155849
+weighted_f1         0.74102179	0.07303754
+
+Config: gs_0.0_0.5_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099979	0.00023020
+macro_precision     0.74929186	0.06129688
+macro_recall        0.71984935	0.06997793
+macro_f1            0.72323671	0.07748787
+weighted_precision  0.75854353	0.05893443
+weighted_recall     0.74526999	0.05854822
+weighted_f1         0.74158149	0.06978406
+
+Config: gs_0.0_1.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00100495	0.00023070
+macro_precision     0.74910131	0.05519040
+macro_recall        0.71946397	0.06981170
+macro_f1            0.72283393	0.07739595
+weighted_precision  0.75739826	0.05369715
+weighted_recall     0.74399057	0.05870551
+weighted_f1         0.74014360	0.06945046
+
+Config: gs_0.5_0.5_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00101209	0.00023741
+macro_precision     0.74722031	0.06487850
+macro_recall        0.71680369	0.07204752
+macro_f1            0.72063483	0.08106878
+weighted_precision  0.75524129	0.06129573
+weighted_recall     0.74218386	0.06041342
+weighted_f1         0.73840144	0.07232968
+
+Config: gs_0.5_1.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00101423	0.00022764
+macro_precision     0.74608202	0.05221268
+macro_recall        0.71661195	0.06871302
+macro_f1            0.71995224	0.07682463
+weighted_precision  0.75549533	0.05140879
+weighted_recall     0.74158680	0.05790584
+weighted_f1         0.73817612	0.06926028
+
+Config: gs_1.0_0.5_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00100229	0.00023659
+macro_precision     0.75288523	0.05558762
+macro_recall        0.71768060	0.07139423
+macro_f1            0.72367485	0.07869603
+weighted_precision  0.75961281	0.05373058
+weighted_recall     0.74468844	0.06019102
+weighted_f1         0.74160077	0.07075470
+
+Config: gs_1.0_1.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00098889	0.00023940
+macro_precision     0.75267227	0.05831713
+macro_recall        0.72240403	0.07213032
+macro_f1            0.72591722	0.07976659
+weighted_precision  0.76183081	0.05629647
+weighted_recall     0.74804596	0.06089181
+weighted_f1         0.74457816	0.07194554
+
+Config: gs_2.0_0.5_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099892	0.00023563
+macro_precision     0.75311835	0.05610822
+macro_recall        0.72092367	0.07111180
+macro_f1            0.72576915	0.07842125
+weighted_precision  0.76001045	0.05435953
+weighted_recall     0.74553363	0.05992374
+weighted_f1         0.74252228	0.07049166
+
+Config: gs_2.0_1.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00100415	0.00022896
+macro_precision     0.75054556	0.05851369
+macro_recall        0.71856374	0.06922674
+macro_f1            0.72334714	0.07804376
+weighted_precision  0.75797853	0.05577215
+weighted_recall     0.74419993	0.05825959
+weighted_f1         0.74078496	0.06964951
+
+Config: gs_0.0_0.0_2
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099885	0.00024263
+macro_precision     0.74823982	0.07022483
+macro_recall        0.72185674	0.07374629
+macro_f1            0.72483205	0.08276093
+weighted_precision  0.75803888	0.06659525
+weighted_recall     0.74550262	0.06174200
+weighted_f1         0.74230707	0.07405499
+
+Config: gs_0.0_0.0_3
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00111261	0.00028304
+macro_precision     0.72350337	0.07012165
+macro_recall        0.68585249	0.08481742
+macro_f1            0.68827808	0.09661307
+weighted_precision  0.73204913	0.06893227
+weighted_recall     0.71658137	0.07198163
+weighted_f1         0.70970582	0.08717308
+
+Config: gs_0.0_0.0_4
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00131841	0.00030753
+macro_precision     0.67191442	0.08571507
+macro_recall        0.62483697	0.09246285
+macro_f1            0.62162702	0.10687641
+weighted_precision  0.68130889	0.08274339
+weighted_recall     0.66423575	0.07820558
+weighted_f1         0.64882752	0.09634309
+
+Config: gs_0.5_2.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00100729	0.00023201
+macro_precision     0.74595099	0.05990114
+macro_recall        0.71806082	0.06970227
+macro_f1            0.72094426	0.07827756
+weighted_precision  0.75549046	0.05684479
+weighted_recall     0.74336249	0.05904464
+weighted_f1         0.73941652	0.07009887
+
+Config: gs_1.0_2.0_1
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00099384	0.00023318
+macro_precision     0.75207833	0.05733265
+macro_recall        0.72212550	0.07096091
+macro_f1            0.72625351	0.07837739
+weighted_precision  0.75968296	0.05611697
+weighted_recall     0.74681306	0.05931251
+weighted_f1         0.74347444	0.07047029
+
+Config: gs_0.0_0.0_5
+Metric		AUC		Std Dev
+----------------------------------------
+false_alarm_rate    0.00116797	0.00029558
+macro_precision     0.70972362	0.08273818
+macro_recall        0.67054583	0.08910310
+macro_f1            0.67047625	0.10180333
+weighted_precision  0.71881492	0.07941643
+weighted_recall     0.70246929	0.07518403
+weighted_f1         0.69332282	0.09166772
