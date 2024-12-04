@@ -94,7 +94,8 @@ def format_results(config: str, results: Dict[str, Tuple[float, float]]):
 
 def main():
     base_dir = 'confusion_matrices/resnet18'
-    datasets = ['caltech256', 'cifar100', 'food101', 'mit67']
+    # datasets = ['caltech256', 'cifar100', 'food101', 'mit67']
+    datasets = ['caltech256']
     
     for dataset in datasets:
         print(f"\nDataset: {dataset}")
