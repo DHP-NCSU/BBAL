@@ -3,7 +3,7 @@ import os
 from sklearn.metrics import precision_score, recall_score, f1_score
 from typing import List, Dict, Tuple
 
-def calculate_metrics_per_class(conf_matrix: np.ndarray) -> Dict[str, Tuple[float, float]]:
+def calculate_metrics_per_class(conf_matrix: np.ndarray) -> float:
     """Calculate metrics per class and their standard deviations."""
     n_classes = conf_matrix.shape[0]
     
@@ -43,15 +43,7 @@ def calculate_metrics_per_class(conf_matrix: np.ndarray) -> Dict[str, Tuple[floa
     weighted_recall = np.average(recalls, weights=weights)
     weighted_f1 = np.average(f1_scores, weights=weights)
     
-    return {
-        'false_alarm_rate': (np.mean(false_alarm_rates), np.std(false_alarm_rates)),
-        'macro_precision': (np.mean(precisions), np.std(precisions)),
-        'macro_recall': (np.mean(recalls), np.std(recalls)),
-        'macro_f1': (np.mean(f1_scores), np.std(f1_scores)),
-        'weighted_precision': (weighted_precision, np.std(precisions)),
-        'weighted_recall': (weighted_recall, np.std(recalls)),
-        'weighted_f1': (weighted_f1, np.std(f1_scores))
-    }
+    return np.std(false_alarm_rates)
 
 def calculate_auc(metrics_list: List[Dict[str, Tuple[float, float]]]) -> Dict[str, Tuple[float, float]]:
     """Calculate AUC for metrics and their standard deviations."""
@@ -65,7 +57,7 @@ def calculate_auc(metrics_list: List[Dict[str, Tuple[float, float]]]) -> Dict[st
         )
     return auc_dict
 
-def process_experiment_folder(folder_path: str) -> Dict[str, Tuple[float, float]]:
+def process_experiment_folder(folder_path: str) -> List[float]:
     """Process all iteration files in an experiment folder."""
     metrics_list = []
     
@@ -78,7 +70,7 @@ def process_experiment_folder(folder_path: str) -> Dict[str, Tuple[float, float]
         metrics = calculate_metrics_per_class(conf_matrix)
         metrics_list.append(metrics)
     
-    return calculate_auc(metrics_list)
+    return metrics_list
 
 def format_results(config: str, results: Dict[str, Tuple[float, float]]):
     """Format results in the specified format."""
@@ -95,8 +87,8 @@ def format_results(config: str, results: Dict[str, Tuple[float, float]]):
 def main():
     base_dir = 'confusion_matrices/resnet18'
     # datasets = ['caltech256', 'cifar100', 'food101', 'mit67']
-    # datasets = ['caltech256']
-    datasets = ['cifar100', 'mit67']
+    datasets = ['caltech256']
+    # datasets = ['cifar100', 'mit67']
     
     for dataset in datasets:
         print(f"\nDataset: {dataset}")
@@ -105,7 +97,9 @@ def main():
             continue
             
         # Process all experiment folders
-        for exp_folder in sorted(os.listdir(dataset_path)):
+        results = []
+        for exp_folder in ["gs_0.0_0.0_1", "gs_0.0_0.0_3"]:#, "gs_2.0_2.0", "gs_2.0_2.0_1"]:
+        # for exp_folder in ["gs_2.0_2.0", "gs_2.0_2.0_1"]:
             if not os.path.isdir(os.path.join(dataset_path, exp_folder)):
                 continue
             
@@ -113,8 +107,10 @@ def main():
             # if exp_folder.endswith('_1'):
             #     continue
                 
-            results = process_experiment_folder(os.path.join(dataset_path, exp_folder))
-            format_results(exp_folder, results)
+            result = process_experiment_folder(os.path.join(dataset_path, exp_folder))
+            results.append(result)
+        for i in range(len(results[0])):
+            print((results[0][i] + results[1][i]) / 2)
 
 if __name__ == "__main__":
     main()
